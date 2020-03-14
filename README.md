@@ -315,7 +315,7 @@ También supervisa la salud de los contenedores en ejecución del __Pod__.
 __kubelet__ se conecta al __runtime__ del contenedor mediante la Interfaz de Tiempo de Ejecución del Contenedor __(CRI)__. 
 CRI consiste en buffers de protocolo, gRPC API, y librerías.
 
-imagen 4.11
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/4.11_ContainerRuntimeInterface.png)
 
 __kubelet__ que actúa como cliente grpc se conecta a la __CRI__, que actúa como servidor grpc para realizar operaciones de contenedor e imagen. 
 __CRI__ implementa dos servicios: __ImageService__ y __RuntimeService__:
