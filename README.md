@@ -425,6 +425,96 @@ DUDAS:
 
 ## Chapter 5. Installing Kubernetes<a name="chapter5"></a>
 ## 5. Installing Kubernetes
+## 5.1. Kubernetes Configuration
+Los kubernetes pueden ser instalados usando diferentes configuraciones. 
+A continuación se presentan brevemente los cuatro tipos principales de instalación:
+
+* __Instalación de un Single-Node todo en uno:__
+En esta configuración, todos los componentes maestros y trabajadores están instalados y funcionando en un solo __Node__. 
+Aunque es útil para el aprendizaje, desarrollo y pruebas, no debe utilizarse en la producción. 
+__Minikube__ es un ejemplo de ello.
+
+* __Instalación de un Single-Node, etc., de un solo Master Node y de varios Worker Node:__
+En esta configuración, tenemos un __Master Node__ único, que también ejecuta una instancia de un solo __Node etcd__. 
+Múltiples __Workers Nodes__ están conectados al __Master Node__.
+
+* __Instalación de un Single-Node etcd, multi-Master y multi-Worker:__
+En esta configuración, tenemos __Multi-Master Nodes__ configurados en modo HA, pero tenemos una instancia de un solo __Node etcd__. __Multi-Worker Nodes__ están conectados a los __Master Nodes__.
+
+* __Instalación de Multi-Node etcd, Multi-Master y Multi-Worker:__
+En este modo, __etcd__ está configurado en modo HA agrupado, los __Master Nodes__ están todos configurados en modo HA, conectando a __Multi-Worker Nodes__. 
+
+> __Esta es la configuración de producción más avanzada y recomendada.__
+
+
+## 5.2. Infrastructure for Kubernetes Installation
+Una vez que decidimos el tipo de instalación, también tenemos que tomar algunas decisiones relacionadas con la infraestructura:
+
+* ¿Debemos establecer los k8s en metal desnudo, nube pública o nube privada?
+* ¿Qué sistema operativo subyacente deberíamos utilizar? ¿Deberíamos elegir RHEL, CoreOS, CentOS, u otra cosa?
+* ¿Qué solución de red deberíamos utilizar?
+* Y así sucesivamente.
+
+
+## 5.3. Localhost Installation
+Estas son sólo algunas de las opciones de instalación del host local disponibles para desplegar clusters de Kubernetes de uno o varios __Nodes__ en nuestra estación de trabajo/portátil:
+
+* __Minikube__ - cluster de Kubernetes locales de un __Single-Node__.
+* __Docker Desktop__ - __Single-Node__ de cluster local de Kubernetes para Windows y Mac.
+* __CDK en LXD__ - cluster local __Multi-Node__ con contenedores de LXD.
+
+> Minikube es la forma preferida y recomendada para crear una configuración de Kubernetes todo en uno localmente.
+
+
+## 5.4. On-Premise Installation
+Los kubernetes pueden instalarse en las máquinas virtuales y en el metal desnudo.
+
+* __VMs en las instalaciones:__
+Los kubernetes pueden instalarse en las máquinas virtuales creadas a través de Vagrant, VMware vSphere, KVM u otra herramienta de gestión de la configuración (CM) junto con un software de hipervisor. Hay diferentes herramientas disponibles para automatizar la instalación, como __Ansible__ o __kubeadm__.
+* __Bare Metal en las instalaciones:__
+Los kubernetes pueden ser instalados en bare-metal, en RHEL, CoreOS, CentOS, Fedora, Ubuntu, etc.
+
+
+## 5.5. Cloud Installation
+kubernetes pueden ser instalados y administrados en casi cualquier entorno de nube:
+
+* __Soluciones alojadas:__
+Algunos de los proveedores que ofrecen soluciones alojadas para Kubernetes son:
+    * Motor de Kubernetes de Google (GKE).
+    * Servicio de Kubernetes Azules (AKS).
+    * Servicio de Contenedores Elásticos del Amazonas para Kubernetes (EKS).
+    * DigitalOcean Kubernetes.
+    * OpenShift Dedicado.
+    * Plataforma9.
+    * IBM Cloud Kubernetes Service.
+
+* __Soluciones Turnkey:__
+Kubernetes gestionado, como por ejemplo:
+    * Motor de Computación de Google (GCE).
+    * Amazon AWS (AWS EC2).
+    * Microsoft Azure (AKS).
+
+* __Soluciones "llave en mano" en las instalaciones:__
+Las Soluciones On-Premise instalan Kubernetes en nubes privadas internas seguras con sólo unos pocos comandos:
+    * GKE On-Prem de Google Cloud.
+    * IBM Cloud Private.
+    * OpenShift Container Platform de Red Hat.
+
+
+## 5.6. Kubernetes Installation Tools/Resources 
+Algunas herramientas/recursos útiles disponibles:
+
+* __kubeadm:__
+Es una forma segura y recomendada de arrancar un cluster de Kubernetes de __Single-Node__ o __Multi-Node__.
+
+* __kubespray:__
+(antes conocido como __kargo__), podemos instalar clusters de Kubernetes en HA en AWS, GCE, Azure, OpenStack, o bare-metal. Está basado en __Ansible__, y está disponible en la mayoría de las distribuciones de Linux.
+
+* __kops:__
+Podemos crear, destruir, actualizar y mantener clusters de Kubernetes de producción y HA desde la línea de mando. También puede aprovisionar las máquinas. Actualmente, AWS está oficialmente respaldada. La compatibilidad con GCE está en fase beta, y VMware vSphere en fase alfa, y otras plataformas están previstas para el futuro.
+
+* __kube-aws:__
+Podemos crear, actualizar y destruir clusters de Kubernetes en AWS desde la línea de comandos. 
 
 
 
