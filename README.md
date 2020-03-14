@@ -308,6 +308,22 @@ k8s soporta:
 * rktlet:
 
 ### 4.11. Worker Node Components: kubelet
+__kubelet__ es un agente que se ejecuta en cada nodo y se comunica con los componentes del plano de control del nodo maestro. 
+Recibe las definiciones del __Pod__, principalmente del __API Server__, e interactúa con el __runtime__ del contenedor en el nodo para ejecutar los contenedores asociados al __Pod__. 
+También supervisa la salud de los contenedores en ejecución del __Pod__.
+
+__kubelet__ se conecta al __runtime__ del contenedor mediante la Interfaz de Tiempo de Ejecución del Contenedor __(CRI)__. 
+CRI consiste en buffers de protocolo, gRPC API, y librerías.
+
+imagen 4.11
+
+__kubelet__ que actúa como cliente grpc se conecta a la __CRI__, que actúa como servidor grpc para realizar operaciones de contenedor e imagen. 
+__CRI__ implementa dos servicios: __ImageService__ y __RuntimeService__:
+
+* __ImageService__ es responsable de todas las operaciones relacionadas con la imagen.
+* __RuntimeService__ es responsable de todas las operaciones relacionadas con el __Pod__ y el contenedor.
+Los tiempos de ejecución de los contenedores solían estar codificados en duro en Kubernetes, pero con el desarrollo de CRI, Kubernetes es más flexible ahora y utiliza diferentes tiempos de ejecución de los contenedores sin necesidad de recompilar. 
+Cualquier tiempo de ejecución de contenedor que implemente la CRI puede ser usado por Kubernetes para gestionar Pods, contenedores e imágenes de contenedores.
 
 
 ### 4.12. Worker Node Components: kubelet - CRI shims
