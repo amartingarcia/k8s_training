@@ -543,48 +543,369 @@ __kubectl__ es un binario utilizado para acceder y gestionar cualquier grupo de 
 
 ## Chapter 7. Accessing Minikube<a name="chapter7"></a>
 ## 7. Accessing Minikube
+## 7.1. Accessing Minikube
+Se puede acceder a cualquier grupo de Kubernetes que funcione bien a través de cualquiera de los siguientes métodos:
+
+* Herramientas y scripts de la Interfaz de Línea de Comando (CLI).
+* Interfaz de usuario basada en la web (Web UI) desde un navegador web.
+* APIs de CLI o programáticamente.
+
+Estos métodos son aplicables a todos los grupos de Kubernetes. 
+
+
+## 7.2. Accessing Minikube: Command Line Interface (CLI)
+__kubectl__ es el cliente de la Interfaz de Línea de Comando (CLI) de Kubernetes para gestionar los recursos y aplicaciones del cluster. Puede utilizarse de forma autónoma o como parte de scripts y herramientas de automatización. Una vez que se han configurado todas las credenciales y puntos de acceso al clúster necesarios para kubectl, se puede utilizar de forma remota desde cualquier lugar para acceder a un clúster. 
+
+En capítulos posteriores, utilizaremos kubectl para desplegar aplicaciones, gestionar y configurar los recursos de Kubernetes.
+
+
+## 7.3. Accessing Minikube: Web-based User Interface (Web UI)
+El Dashboard de Kubernetes proporciona una Interfaz de Usuario basada en la Web (Web UI) para interactuar con un grupo de Kubernetes para gestionar recursos y aplicaciones en contenedores. En uno de los últimos capítulos, la utilizaremos para desplegar una aplicación en contenedor.
+
+
+## 7.4. Accessing Minikube: APIs
+Como sabemos, Kubernetes tiene el servidor API, y los operadores/usuarios se conectan a él desde el mundo externo para interactuar con el cluster. Usando tanto la CLI como la Web UI, podemos conectarnos al servidor API que se ejecuta en el nodo maestro para realizar diferentes operaciones. Podemos conectarnos directamente al servidor de la API utilizando sus puntos finales de la API y enviarle comandos, siempre y cuando podamos acceder al nodo maestro y tengamos las credenciales adecuadas.
+
+A continuación, podemos ver una parte del espacio de la API HTTP de Kubernetes:
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/7.3_HTTPAPISpaceofKubernetes.png)
+
+El espacio de la API HTTP de los gobernantes se puede dividir en tres grupos independientes:
+
+* Grupo central (/api/v1)
+Este grupo incluye objetos como Pods, Servicios, nodos, espacios de nombres, configmaps, secretos, etc.
+
+* Grupo de nombres
+Este grupo incluye objetos en formato /apis/$NAME/$VERSION. Estas diferentes versiones de la API implican diferentes niveles de estabilidad y soporte:
+Nivel Alfa - puede ser eliminado en cualquier momento, sin previo aviso. Por ejemplo, /apis/batch/v2alpha1.
+Nivel Beta - está bien probado, pero la semántica de los objetos puede cambiar de forma incompatible en una posterior versión beta o estable. Por ejemplo, /apis/certificados.k8s.io/v1beta1.
+Nivel estable - aparece en el software publicado para muchas versiones posteriores. Por ejemplo, /apis/networking.k8s.io/v1.
+
+* A nivel de todo el sistema
+Este grupo consiste en puntos finales de la API de todo el sistema, como /healthz, /logs, /metrics, /ui, etc.
+Podemos conectarnos a un servidor de la API directamente llamando a los respectivos puntos finales de la API o a través del CLI/Web UI.
+
+A continuación veremos cómo podemos acceder al entorno de Minikube que hemos configurado en el capítulo anterior.
+
+
+## 7.5. kubectl
+__kubectl__ se instala generalmente antes de instalar el Minikube, pero también podemos instalarlo después. Una vez instalado, kubectl recibe su configuración automáticamente para el acceso al cluster de Kubernetes de Minikube. Sin embargo, en otras configuraciones de clúster de Kubernetes, es posible que necesitemos configurar los puntos de acceso al clúster y los certificados requeridos por kubectl para acceder al clúster.
+
+Existen diferentes métodos que pueden utilizarse para instalar kubectl, que se mencionan en la documentación de Kubernetes. Para obtener los mejores resultados, se recomienda mantener kubectl en la misma versión que los Kubernetes dirigidos por Minikube - en el momento en que se escribió el curso la última versión estable era la v1.14.1. A continuación, veremos algunos pasos para instalarlo en sistemas Linux, MacOS y Windows.
+
+## 7.6. Installing kubectl on Linux
+Para instalar kubectl en Linux, siga las siguientes instrucciones:
+
+Descargue el último binario estable de kubectl, hágalo ejecutable y muévalo al PATH:
+
+> $ curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
+
+NOTA: Para descargar y configurar una versión específica de kubectl (como la v1.14.1), emita el siguiente comando:
+
+> $ curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.14.1/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
+
+
+## 7.7. Installing kubectl on macOS
+Hay dos maneras de instalar kubectl en macOS: manualmente y usando el administrador de paquetes de Homebrew. A continuación, daremos instrucciones para ambos métodos.
+
+Para instalar kubectl manualmente, descargue el último binario estable de kubectl, hágalo ejecutable y muévalo al PATH con el siguiente comando:
+
+> $ curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
+
+NOTA: Para descargar y configurar una versión específica de kubectl (como la v1.14.1), emita el siguiente comando:
+
+> $ curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.14.1/bin/darwin/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
+
+Para instalar kubectl con el administrador de paquetes de Homebrew, emita el siguiente comando:
+
+$ brew install kubernetes-cli
+
+
+## 7.8. kubectl Configuration File
+Para acceder al clúster de Kubernetes, el cliente de kubectl necesita el punto final del nodo maestro y las credenciales adecuadas para poder interactuar con el servidor de la API que se ejecuta en el nodo maestro. Al iniciar Minikube, el proceso de inicio crea, por defecto, un archivo de configuración, config, dentro del directorio.kube (a menudo denominado archivo dot-kube-config), que reside en el directorio principal del usuario. El archivo de configuración tiene todos los detalles de conexión requeridos por kubectl. Por defecto, el binario de kubectl analiza este archivo para encontrar el punto final de conexión del nodo maestro, junto con las credenciales. Para ver los detalles de conexión, podemos ver el contenido del archivo ~/.kube/config (en Linux) o ejecutar el siguiente comando:
+
+```yaml
+$ kubectl config view
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority: /home/student/.minikube/ca.crt
+    server: https://192.168.99.100:8443
+  name: minikube
+contexts:
+- context:
+    cluster: minikube
+    user: minikube
+  name: minikube
+current-context: minikube
+kind: Config
+preferences: {}
+users:
+- name: minikube
+  user:
+    client-certificate: /home/student/.minikube/client.crt
+    client-key: /home/student/.minikube/client.key
+``` 
+
+
+Una vez instalado kubectl, podemos obtener información sobre el clúster de Minikube con el comando kubectl cluster-info: 
+
+```
+$ kubectl cluster-info
+Kubernetes master is running at https://192.168.99.100:8443
+KubeDNS is running at https://192.168.99.100:8443//api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+
+To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+``` 
+
+Para seguir depurando y diagnosticando los problemas de los racimos, usa el 'kubectl cluster-info dump'.
+
+Puedes encontrar más detalles sobre las opciones de la línea de comandos de kubectl aquí.
+
+Aunque para el clúster de Kubernetes instalado por Minikube el archivo ~/.kube/config se crea automáticamente, este no es el caso de los clústeres de Kubernetes instalados por otras herramientas. En otros casos, el archivo de configuración tiene que ser creado manualmente y a veces reconfigurado para adaptarse a varias configuraciones de red y de cliente/servidor.
+
+
+## 7.9. Kubernetes Dashboard
+Como se ha mencionado anteriormente, el Tablero de Kubernetes proporciona una interfaz de usuario basada en la web para la gestión del clúster de Kubernetes. Para acceder al Dashboard desde Minikube, podemos utilizar el comando minikube dashboard, que abre una nueva pestaña en nuestro navegador web, mostrando el Dashboard de los Kubernetes:
+
+``` 
+$ minikube dashboard
+``` 
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/7.9_KubernetesDashboard.png)
+
+NOTA: En caso de que el navegador no abra otra pestaña y no muestre el Tablero de Control como se esperaba, verifique la salida en su terminal ya que puede mostrar un enlace para el Tablero de Control (junto con algunos mensajes de error). Copie y pegue ese enlace en una nueva pestaña de su navegador. Dependiendo de las características de su terminal, es posible que sólo tenga que hacer clic o hacer clic con el botón derecho del ratón en el enlace para abrirlo directamente en el navegador. El enlace puede tener un aspecto similar:
+
+```
+http://127.0.0.1:37751/api/v1/namespaces/kube-system/services/http:kubernetes-dashboard:/proxy/
+```
+
+Lo más probable es que la única diferencia sea el número del PUERTO, que arriba es 37751. Su número de puerto puede ser diferente.
+
+Después de un cierre de sesión/login o un reinicio de su estación de trabajo, el comportamiento normal debe ser esperado (donde el comando minikube dashboard abre directamente una nueva pestaña en su navegador mostrando el Dashboard).
+
+
+## 7.10. The 'kubectl proxy' Command
+Al emitir el comando proxy kubectl, kubectl se autentica con el servidor API en el nodo maestro y hace que el Dashboard esté disponible en una URL ligeramente diferente a la anterior, esta vez a través del puerto proxy 8001.
+
+Primero, emitimos el comando kubectl proxy:
+
+```
+$ kubectl proxy
+Starting to serve on 127.0.0.1:8001
+```
+
+Bloquea la terminal mientras el proxy esté funcionando. Con el proxy ejecutándose podemos acceder al Dashboard a través de la nueva URL (sólo tienes que hacer clic en ella abajo - debería funcionar en tu estación de trabajo). Una vez que detenemos el proxy (con CTRL + C) el Dashboard ya no es accesible.
+
+```
+http://127.0.0.1:8001/api/v1/namespaces/kube-system/services/kubernetes-dashboard:/proxy/#!/overview?namespace=default 
+```
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/7.10_KubernetesDashboardovertheproxy.png)
+
+
+## 7.11. APIs - with 'kubectl proxy'
+Cuando se ejecuta el proxy de kubectl, podemos enviar solicitudes a la API a través del localhost en el puerto proxy 8001 (desde otra terminal, ya que el proxy bloquea la primera terminal):
+
+```json
+$ curl http://localhost:8001/
+{
+ "paths": [
+   "/api",
+   "/api/v1",
+   "/apis",
+   "/apis/apps",
+   ......
+   ......
+   "/logs",
+   "/metrics",
+   "/openapi/v2",
+   "/version"
+ ]
+}
+```
+
+Con la solicitud de rizo anterior, solicitamos todos los puntos finales de la API al servidor de la API. Al hacer clic en el enlace anterior (en el comando curl), se abrirá la misma salida de listado en una pestaña del navegador.
+
+Podemos explorar todas las combinaciones de rutas con curl o en un navegador, por ejemplo:
+
+```
+http://localhost:8001/api/v1
+
+http://localhost:8001/apis/apps/v1
+
+http://localhost:8001/healthz
+
+http://localhost:8001/metrics
+```
+
+## 7.12. APIs - without 'kubectl proxy'
+Cuando no se utiliza el proxy kubectl, es necesario autenticarse en el servidor de la API cuando se envían las solicitudes de la API. Podemos autenticarnos proporcionando un token portador al emitir un rizo, o proporcionando un conjunto de claves y certificados.
+
+Un token portador es un token de acceso que es generado por el servidor de autenticación (el servidor de la API en el nodo maestro) y devuelto al cliente. Utilizando ese token, el cliente puede conectarse de nuevo al servidor de la API de Kubernetes sin necesidad de proporcionar más detalles de autenticación y, a continuación, acceder a los recursos.
+
+Consigue el token:
+
+```
+$ TOKEN=$(kubectl describe secret -n kube-system $(kubectl get secrets -n kube-system | grep default | cut -f1 -d ' ') | grep -E '^token' | cut -f2 -d':' | tr -d '\t' | tr -d " ")
+```
+Get the API server endpoint:
+
+```
+$ APISERVER=$(kubectl config view | grep https | cut -f 2- -d ":" | tr -d " ")
+```
+
+Confirm that the APISERVER stored the same IP as the Kubernetes master IP by issuing the following 2 commands and comparing their outputs:
+
+```
+$ echo $APISERVER
+https://192.168.99.100:8443
+
+$ kubectl cluster-info
+Kubernetes master is running at https://192.168.99.100:8443 ...
+```
+
+Access the API server using the curl command, as shown below:
+
+```json
+$ curl $APISERVER --header "Authorization: Bearer $TOKEN" --insecure
+{
+ "paths": [
+   "/api",
+   "/api/v1",
+   "/apis",
+   "/apis/apps",
+   ......
+   ......
+   "/logs",
+   "/metrics",
+   "/openapi/v2",
+   "/version"
+ ]
+}
+```
+
+En lugar del token de acceso, podemos extraer el certificado de cliente, la clave de cliente y los datos de la autoridad de certificación del archivo .kube/config. Una vez extraídos, se codifican y luego se pasan con un comando curl para la autenticación. El nuevo comando curl es similar a:
+
+```
+$ curl $APISERVER --cert encoded-cert --key encoded-key --cacert encoded-ca
+```
 
 
 
 ## Chapter 8. Kubernetes Building Blocks<a name="chapter8"></a>
 ## 8. Kubernetes Building Blocks
+## 8.1. Kubernetes Object Model
+## 8.2. Pods
+## 8.3. Labels
+## 8.4. Label Selectors
+## 8.5. ReplicationControllers
+## 8.6. ReplicaSets I
+## 8.7. ReplicaSets II
+## 8.8. ReplicaSets III
+## 8.9. Deployments I
+## 8.10. Deployments II
+## 8.11. Deployments III
+## 8.12. Namespaces 
 
 
 
 ## Chapter 9. Authentication, Authorization, Admission Control<a name="chapter9"></a>
 ## 9. Authentication, Authorization, Admission Control
-
-
+## 9.1. Authentication, Authorization, and Admission Control - Overview
+## 9.2. Authentication I
+## 9.3. Authentication II
+## 9.4. Authorization I
+## 9.5. Authorization II
+## 9.6. Authorization III
+## 9.7.Admission Control
+## 9.8. Authentication and Authorization Exercise Guide
 
 ## Chapter 10. Services<a name="chapter10"></a>
 ## 10. Services
-
-
+## 10.1. Connecting Users to Pods
+## 10.2. Services
+## 10.3. Service Object Example
+## 10.4. kube-proxy
+## 10.5. Service Discovery
+## 10.6. ServiceType
+## 10.7. ServiceType: ClusterIP and NodePort
+## 10.8. ServiceType: LoadBalancer
+## 10.9. ServiceType: ExternalIP
+## 10.10. ServiceType: ExternalName
 
 ## Chapter 11. Deploying a Stand-Alone Application<a name="chapter11"></a>
 ## 11. Deploying a Stand-Alone Application
-
+## 11.1. Deploying an Application Using the Dashboard I
+## 11.2. Deploying an Application Using the Dashboard II
+## 11.3. Deploying an Application Using the Dashboard III
+## 11.4. Exploring Labels and Selectors I
+## 11.5. Exploring Labels and Selectors II
+## 11.6. Exploring Labels and Selectors III
+## 11.7. Deploying an Application Using the CLI I
+## 11.8. Deploying an Application Using the CLI II
+## 11.9. Exposing an Application I
+## 11.10. Exposing an Application II
+## 11.11. Accessing an Application
+## 11.12. Liveness and Readiness Probes
+## 11.13. Liveness
+## 11.14. Liveness Command
+## 11.15. Liveness HTTP Request
+## 11.16. TCP Liveness Probe
+## 11.17. Readiness Probes
 
 
 ## Chapter 12. Kubernetes Volume Management<a name="chapter12"></a>
 ## 12. Kubernetes Volume Management
-
-
+## 12.1. Volumes
+## 12.2. Volume Types
+## 12.3. PersistentVolumes
+## 12.4. PersistentVolumeClaims
+## 12.5. Container Storage Interface (CSI)
 
 ## Chapter 13. ConfigMaps and Secrets<a name="chapter13"></a>
 ## 13. ConfigMaps and Secrets
-
+## 13.1. ConfigMaps
+## 13.2. Create a ConfigMap from Literal Values and Display Its Details
+## 13.3. Create a ConfigMap from a Configuration File
+## 13.4. Create a ConfigMap from a File
+## 13.5. Use ConfigMaps Inside Pods
+## 13.6. Secrets
+## 13.7. Create a Secret from Literal and Display Its Details
+## 13.8. Create a Secret Manually
+## 13.9. Create a Secret from a File and Display Its Details
+## 13.10. Use Secrets Inside Pods
 
 
 ## Chapter 14. Ingress<a name="chapter14"></a>
 ## 14. Ingress
-
+## 14.1. Ingress I
+## 14.2. Ingress II
+## 14.3. Ingress Controller
+## 14.4. Deploy an Ingress Resource
+## 14.5. Access Services Using Ingress
 
 
 ## Chapter 15. Advanced Topics<a name="chapter15"></a>
 ## 15. Advanced Topics
-
-
+## 15.1. Annotations
+## 15.2. Jobs and CronJobs
+## 15.3. Quota Management
+## 15.4. Autoscaling
+## 15.5. DaemonSets
+## 15.6. StatefulSets
+## 15.7. Kubernetes Federation
+## 15.8. Custom Resources
+## 15.9. Helm
+## 15.10. Security Contexts and Pod Security Policies
+## 15.11. Network Policies
+## 15.12. Monitoring and Logging
 
 ## Chapter 16. Kubernetes Community<a name="chapter16"></a>
 ## 16. Kubernetes Community
+## 16.1. Kubernetes Community
+## 16.2. Weekly Meetings and Meetup Groups
+## 16.3. Slack Channels and Mailing Lists
+## 16.4. SIGs and Stack Overflow
+## 16.5. CNCF Events
+## 16.6. What's Next on Your Kubernetes Journey?
