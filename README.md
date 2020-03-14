@@ -212,7 +212,8 @@ Para k8s, CNCF:
 ## 4. Kubernetes Architecture
 ### 4.1. Kubernetes Architecture
 A un nivel muy alto, kubernetes cuenta con los siguientes componnentes principales:
-![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/4.1_KubernetesArquitecture.png)
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/4.1_KubernetesArchitecture.png)
 
 * Uno o más nodos maestros
 * Uno o más nodos trabajadores
@@ -223,7 +224,7 @@ A un nivel muy alto, kubernetes cuenta con los siguientes componnentes principal
 El __Master Node__, proporciona un entorno de ejecución, es el reponsable de gestionar el estado del cluster de k8s, y es el cerebro detrás de todas las operaciones.
 Para comunicarse con el cluster, los usuarios envian solicitudes al __Master Node__ a través de la __CLI__, un panel de control de interfaz de usuario o una interfaz gráfica de programación __(API)__.
 
-[alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/4.2_KubernetesMasterNode.png)
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/4.2_KubernetesMasterNode.png)
 
 Es importante mantener el plano de control. Perder el plano de control puede introducir tiempos de inactividad, causando la interrumpción del servicio a los clientes. 
 Para asegurar tolerancia a fallos, se añaden réplicas del __Master Node__ al cluster, configurandolo así, en modo HA.
