@@ -520,6 +520,24 @@ Podemos crear, actualizar y destruir clusters de Kubernetes en AWS desde la lín
 
 ## Chapter 6. Minikube - A Local Single-Node Kubernetes Cluster<a name="chapter6"></a>
 ## 6. Minikube - A Local Single-Node Kubernetes Cluster
+## 6.1. Requirements for Running Minikube
+__Minikube__ está disponible para Linux, MacOS o Windows. Sin embargo, para aprovechar al máximo todas las características que ofrece Minikube, se debe instalar un Hipervisor de Tipo 2 en tu equipo local, para que funcione en conjunto con Minikube. 
+
+__Minikube__ construye toda su infraestructura siempre y cuando el Hipervisor de Tipo 2 esté instalado en nuestra estación de trabajo. Minikube invoca el Hipervisor para crear una sola VM que luego alberga un clúster de Kubernetes de un solo nodo. Por lo tanto, necesitamos asegurarnos de que tenemos el hardware y el software necesario requerido por Minikube para construir su entorno. A continuación se describen los requisitos para ejecutar Minikube en nuestra estación de trabajo local:
+
+* __kubectl:__
+__kubectl__ es un binario utilizado para acceder y gestionar cualquier grupo de Kubernetes. Se instala por separado de Minikube.
+
+* __Hipervisor de tipo 2:__
+    * En Linux VirtualBox o KVM
+    * En macOS VirtualBox, HyperKit o VMware Fusion
+    * En Windows VirtualBox o Hyper-V
+
+> NOTA: Minikube soporta una opción __--vm-driver=none__ que ejecuta los componentes de Kubernetes directamente en el sistema operativo del host y no dentro de una VM. Con esta opción se requiere una instalación __Docker__ y un sistema operativo Linux en la estación de trabajo local, pero no una instalación de hipervisor. Si utiliza __--vm-driver=none__, asegúrese de especificar una red de puente para Docker. De lo contrario, podría cambiar entre los reinicios de la red, causando la pérdida de conectividad a su clúster.
+
+* La virtualización de VT-x/AMD-v debe estar habilitada en la estación de trabajo local en el BIOS.
+
+* Conexión a Internet en la primera ejecución de Minikube - para descargar paquetes, dependencias, actualizaciones y sacar las imágenes necesarias para iniciar el cluster de Minikube Kubernetes. Las ejecuciones subsiguientes requerirán una conexión a Internet sólo cuando las nuevas imágenes Docker necesiten ser extraídas de un repositorio de contenedores o cuando las aplicaciones desplegadas en contenedores lo necesiten. Una vez que una imagen ha sido extraída puede ser reutilizada sin una conexión a Internet.
 
 
 
