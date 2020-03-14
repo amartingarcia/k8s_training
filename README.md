@@ -2,11 +2,27 @@
 
 k8s
 -------------
+**Índice**   
+1. [Chapter 1. From Monolith to Microservices](#chapter1)
+2. [Chapter 2. Container Orchestration](#chapter2)
+3. [Chapter 3. Kubernetes](#chapter3)
+4. [Chapter 4. Kubernetes Architecture](#chapter4)
+5. [Chapter 5. Installing Kubernetes](#chapter5)
+6. [Chapter 6. Minikube - A Local Single-Node Kubernetes Cluster](#chapter6)
+7. [Chapter 7. Accessing Minikube](#chapter7)
+8. [Chapter 8. Kubernetes Building Blocks](#chapter8)
+9. [Chapter 9. Authentication, Authorization, Admission Control](#chapter9)
+10. [Chapter 10. Services](#chapter10)
+11. [Chapter 11. Deploying a Stand-Alone Application](#chapter11)
+12. [Chapter 12. Kubernetes Volume Management](#chapter12)
+13. [Chapter 13. ConfigMaps and Secrets](#chapter13)
+14. [Chapter 14. Ingress](#chapter14)
+15. [Chapter 15. Advanced Topics](#chapter15)
+16. [Chapter 16. Kubernetes Community](#chapter16)
 
-Chapter 1. From Monolith to Microservices.
-
-1. From Monolith to Microservices
-1.1. The legacy Monolith
+## Chapter 1. From Monolith to Microservices<a name="chapter1"></a>
+## 1. From Monolith to Microservices
+### 1.1. The legacy Monolith
 This boulder represents the monolith application - sedimented layers of features and redundant logic translated into thousands of lines of code, written in a single, not so modern programming language, based on outdated software architecture patterns and principles.
 
 The new features and improvements added to code complexity, making development more challenging - loading, compiling, and building times increase with every new update. 
@@ -18,7 +34,7 @@ Since the entire monolith application runs as a single process, the scaling of i
 During upgrades, patches or migrations of the monolith application - downtimes occur and maintenance windows have to be planned as disruptions in service are expected to impact clients. While there are solutions to minimize downtimes to customers by setting up monolith applications in a highly available active/passive configuration, it may still be challenging for system engineers to keep all systems at the same patch level.
 
 
-1.2. The Modern Microservice.
+### 1.2. The Modern Microservice.
 Similitudes:
 - Monolito       --> Gran roca
 - Microservicios --> Guijarros
@@ -30,14 +46,14 @@ Los microservicios se desarrollan en un lenguaje moderno y el más adecuado para
 La naturaleza distribuida de los servicios añade complejidad a la arquitectura, pero añade beneficios en cuanto a la escalabilidad. Permite no tener inactividad.
 
 
-1.3. Refactoring
+### 1.3. Refactoring
 Una aplicación multiproceso (monolito), no puede funcionar como un microservicio. Por lo tanto, se necesita refactorizar (Big-Bang ó refactorización incremental):
 * Big-bang:                    Bloquea el desarrollo y nuevas características para centrarse en la refactorización
 * Refactorización incremental: Permite que se desarrollen nuevas características y se apliquen como microservicios modernos que puedan comunicarse con la API. 
                                Mientras tantos las características actuales del monolito se refactorizaran, y este irá desvaneciendo lentamente.
 
 
-1.4. Challenges
+### 1.4. Challenges
 Para algunas aplicaciones, puede ser más económico reconstruirlas que refactorizarlas.
 Las aplicaciones estrechamente unidas a almacenes de datos, son candidatas pobres a la refactorización.
 
@@ -53,20 +69,19 @@ El amplio soporte de los contenedores aseguró la portabilidad  de las aplicacio
 
 
 
-Chapter 2. Container Orchestration
-2. Container Orchestration
-2.1. What Are Containers?
+## Chapter 2. Container Orchestration<a name="chapter2"></a>
+## 2. Container Orchestration
+### 2.1. What Are Containers?
 * Contenedores: Son aplicaciones que ofrecen alto rendimiento y escalabilidad. Son los más adecuados para ofrecer microservicios, ya que proporcionan entornos virtuales portatiles y aislados.
 !image 2.1.png
 
 * Microservicios: Son aplicaciones ligeras escritas en varios lenguajes modernos, con dependencias, librerias y requisitos ambientales especificos. 
-
-# Los contenedores encapsulan los microservicios y sus dependencias pero no los ejecutan directamente. Los contenedores ejecutan imágenes de contenedores.
+Los contenedores encapsulan los microservicios y sus dependencias pero no los ejecutan directamente. Los contenedores ejecutan imágenes de contenedores.
 
 * Imagen de contenedor: Agrupa la aplicación junto con su tiempo de ejecución y sus dependencias, ofreciendo un entorno ejecutable aislado.
 
 
-2.2. What Is Container Orchestration?
+### 2.2. What Is Container Orchestration?
 En los entornos de desarrollo la ejecución de contenedores en un solo host, puede ser una opción. Sin embargo, para entornos productivos ya no es una opción viable, ya que debe cumplir una seria de requisitos:
 * Tolerancia a fallos
 * Escalabildiad a petición
@@ -78,7 +93,7 @@ En los entornos de desarrollo la ejecución de contenedores en un solo host, pue
 Los orquestadores de contenedores es una herramienta que permite automatizar los despliegues y la gestión de contenedores, al mismo tiempo que cumple con los requisitos anteriores. 
 
 
-2.3. Container Orchestrators
+### 2.3. Container Orchestrators
 Algunos orquestadores:
 * AWS ECS
 * Azure Container Instances
@@ -87,7 +102,7 @@ Algunos orquestadores:
 * Docker Swarm
 
 
-2.4. Why Use Container Orchestrators?
+### 2.4. Why Use Container Orchestrators?
 Aunque podemos mantener manualmente un par de contenedores, los orquestadores facilitan mucho las tareas.
 
 La mayoría de contenedores puede:
@@ -97,15 +112,15 @@ La mayoría de contenedores puede:
 * Gestionar y optimizar el uso de recursos
 * Permitir una implementación de políticas para el acceso seguro a las aplicaciones que corren en los contenedores.
 
-2.5. Where to Deploy Container Orchestrators?
+### 2.5. Where to Deploy Container Orchestrators?
 Los orquestadores pueden ser desplegados en bare metal, máquinas virtuales, on-premise, o nube pública.
 
 
 
 
-Chapter 3. Kubernetes
-3. Kubernetes
-3.1. What Is Kubernetes?
+## Chapter 3. Kubernetes<a name="chapter3"></a>
+## 3. Kubernetes
+### 3.1. What Is Kubernetes?
 Kubernetes es un sistema de código abierto (OpenSource) para automatizar el despliegue, el escalado y la gestión de aplicaciones en contenedores.
 
 Kubernetes viene del griego, que significa timonel. También se le conoce como k8s.
@@ -124,15 +139,14 @@ Algunas características de kubernetes, son heredadas de Borg, son:
 * Services
 * Labels
 
-3.3. Kubernetes Features I
+### 3.3. Kubernetes Features I
 Kubernetes ofrece un conjunto de características para la orquestación:
 * Automatic bin packing: programan en base a los recuros necesarios y limitaciones, para maximizar su utilización sin sacrificar la disponibilidad.
 * Self-healing: Reemplaza y reprograma automáticamente los contenedores de los donos que fallan. Mata y reinicia los contenedores que no responden a los HealthCheck. También, enviata que se dirija el tráfico a contenedores que no responden.
 * Horizontal scaling: se escalan manual o automáticamente las aplicaciones, en base a métricas.
 * Service discovery and Load Balancing: Los contenedores reciben sus propias direcciones IPs, mientras que se asigna un único DNS a un conjunto de contenedores para ayudar al balanceo de carga.
 
-3.4. Kubernetes Features II
-
+### 3.4. Kubernetes Features II
 * Automated rollouts and rollbacks: Despliegan y retroceden sin problema las actualizaciones de la aplicación y los cambios de configuración, supervisando constantemente la salud de la aplicación, evitando así inactividad.
 * Secret and configuration management: Gestiona los secretos y detalles de la configuración de una aplicación por separado de la imagen del contenedor, con el fin de evitar la reconsctrucción de la imagen respectiva. Los secretos consisten en información confidencial que se le pasa a la aplicación sin revelar el contenido, como en GitHub.
 * Storage orchestration: montan automáticamente soluciones de almacenamiento definidas por software en contenedores de almacenamiento local, proveedores de nube externos o sistemas de almacenamiento en red.
@@ -142,11 +156,11 @@ Kubernetes ofrece un conjunto de características para la orquestación:
 Muchas otras características están por llegar aunque se encuentran en base beta. Otras, ya están estabales y aportan grandes beneficios como el control de acceso basado en roles (RBAC), estable desde la 1.8
 
 
-3.5. Why Use Kubernetes?
+### 3.5. Why Use Kubernetes?
 K8s es portatil y extensible. La arquitectura de k8s es modular y enchufable. No solo orquesta aplicaciones de tipo microservicio desacoplado, si no que su arquitectura sigue patrones de los microservicios desacoplados. Pueden escribirse recursos personalizados, operadores APIs, reglas de programación o plugins.
 
 
-3.6. Kubernetes Users
+### 3.6. Kubernetes Users
 Algunos usuarios que utilizan k8s:
 * BlaBlaCar
 * eBay
@@ -155,7 +169,7 @@ Algunos usuarios que utilizan k8s:
 * ING
 
 
-3.7. Cloud Native Computing Foundation (CNCF)
+### 3.7. Cloud Native Computing Foundation (CNCF)
 Es uno de los proyectos alojados por Linux-Foundation. Tiene como objetivo acelarar la adopción de contenedores, microservicios y aplicaciones nativas de la nube.
 Algunos proyectos:
 * Kubernetes
@@ -181,7 +195,7 @@ Incuvando:
 * Open Policy Agent
 
 
-3.8. CNCF and Kubernetes
+### 3.8. CNCF and Kubernetes
 Para k8s, CNCF:
 * Hogar neutral para la marca registrada, hace cumplir el uso adecuado.
 * Proporciona una licencia para escanear el código del nucleo y del proveedor.
@@ -197,19 +211,20 @@ Para k8s, CNCF:
 
 
 
-Chapter 4. Kubernetes Architecture
-4. Kubernetes Architecture
-4.1. Kubernetes Architecture
+## Chapter 4. Kubernetes Architecture<a name="chapter4"></a>
+## 4. Kubernetes Architecture
+### 4.1. Kubernetes Architecture
 A un nivel muy alto, kubernetes cuenta con los siguientes componnentes principales:
 !4.1.png
 * Uno o más nodos maestros
 * Uno o más nodos trabajadores
 * Base de datos distribuidad, clave-valor, __etcd__
 
-4.2. Master Node
+### 4.2. Master Node
 El nodo maestro, proporciona un entorno de ejecución, es el reponsable  de gestionar el estado del cluster de k8s, y es el cerebro detrás de todas las operaciones del cluster.
 Para comunicarse con el cluster, los usuarios envian solicitudes al nodo maestro a través de la CLI, un panel de control de interfaz de usuario o una interfaz gráfica de programación(API).
 
+[alt text](http://url/to/img.png)
 !4.2.png
 
 Es importante mantener el plano de control. Perder el plano de control puede introducir tiempos de inactividad, causando la interrumpción del servicio a los clientes. Para asegurar tolerancia a fallos, se añaden réplicas del nodo maestro al cluster, configurado en modo HA.
@@ -217,7 +232,7 @@ Mientras que solo uno de los nodos de réplica, administra activamente el cluste
 
 Para mantener el estado del cluster de k8s, todos los datos de la configuración del cluster se guardan en __etcd__. Sin embargo, etcd es un almacenamiento clave-valor distribuido que solo guarda datos relacionados con el estado del cluster. Está configurado en el nodmo maestro y en su host dedicado, para recudir las posibilidades de pérdidas.
 
-4.3. Master Node Components
+### 4.3. Master Node Components
 Un nodo maestro tiene los siguientes componentes:
 * API Server
 * Scheduler
@@ -225,13 +240,13 @@ Un nodo maestro tiene los siguientes componentes:
 * etcd
 
 
-4.4. Master Node Components: API Server
+### 4.4. Master Node Components: API Server
 Todas las tareas administrativas, están coordinadas por kube-apiserver. El API Server, intercepta las llamadas RESTfull de los usuarios, operadores y agentes externos, las valida y las procesa. Durante el procesamiento, API Server, lee  el estado del cluster desde etcd, y despues de la llamada, el estado resultante del cluster de k8s se guarda en etcd.
 API Server, es el único componente que habla con etcd, tanto para leer como para escribir, actuando como una interferfaz de intermediario.
 
 API Server, es configurable, también adminte la adición de API Servers personalizados, cuando el API Server primario se convierte en un proxy de todos los servidores API.
 
-4.5. Master Node Components: Scheduler
+### 4.5. Master Node Components: Scheduler
 El role del Scheduler es asignar nuevos objetosa los pods de los nodos. Durante el proceso de programación, las decisiones se toman en base al estado actual del cluster, y a los requisitos de los nuevos objetos.
 El scheduler, obtiene de etcd, a través de API Server, los datos de uso de recursos de cada nodo del cluster.
 El Scheduler también recibe de API Server, los requisitos del nuevo objeto. Los requisitos pueden incluir las restricciones que establecen los usuarios y los operadores. El Scheduler también tiene en cuenta los requisitos de calidad (QoS), la localización de los datos, la afinidad, la antiafinidad, tolerancia, etc
@@ -241,7 +256,7 @@ Es altamente configurable, si se añaden más Schedulers, es necesario incluir e
 Es bastante importante y complejo.
 
 
-4.6. Master Node Components: Controller Managers
+### 4.6. Master Node Components: Controller Managers
 
 Son componentes del plano de control, en el nodo maestro que regulan el estado del cluster. Son bucles de vigilancia que se ejecutan continuamente y comparan el estado deseado del cluster (proporcionado por los nuevos objectos) con el estado actual (proporcionado de etcd a traves de API Server).
 En caso de desajuste, se toman medidas correctivas para coincidir con el estado deseado.
@@ -250,8 +265,7 @@ Los Controller Managers, son los encargados de actuar cuando los nodos no están
 Es el encargado de interactuar con la infraestructura subyacente de un proveedor de nubes cuando los nodos no están disponibles, de gestionar volumenes de almacenamiento, equilibrar el balancedo de carga y el enrutamiento.
 
 
-4.7. Master Node Components: etcd
-
+### 4.7. Master Node Components: etcd
 Es un almacenamiento de datos clave-valor distribuido que se utiliza para persistir el estado de cluster. Los nuevos datos se escreiben en el almacen solo añadiendolos, los datos nunca son reemplazados. Los datos obsoletos se compactan periódicamente para minimizar el tamaño de etcd.
 
 Solo el API Server es capaz de comunicarse con etcd.
@@ -264,8 +278,7 @@ Algunas herramientas de arranque de clusters de k8s, por defecto, aprovisionando
 
 etcd está escrito en Go. Además de almacenar el estado del cluster, también se almacenan detalles de configuración como subredes, ConfigMaps, secrets, etc
 
-4.8. Worker Node
-
+### 4.8. Worker Node
 Un nodo de trabajo, proporciona un entorno de ejecución para las aplicaciones clientes. Aunque son microservicios en contenedores, estas aplicaciones están encapsuladas en Pods, controladas por componentes del nodo maestro.
 
 Los Pods se programan en los Worker Node, donde se encuentran los recursos de computación, memoria, almacenamiento y la red para hablar entre ellos y el mundo exterior.
@@ -277,8 +290,7 @@ Un Pod, es la unidad mínima de k8s. Es una colección lógica de uno o más con
 Además, para acceder a las aplicaciones del mundo exterior, nos conectamos a los worker nodes  y no al nodo maestro.
 
 
-4.9. Worker Node Components
-
+### 4.9. Worker Node Components
 Un worker Node, cuenta con los siguientes componentes:
 * Container runtime
 * kubelet
@@ -286,8 +298,7 @@ Un worker Node, cuenta con los siguientes componentes:
 * Addons para DNS, Dashboards, monitorización y registros de logs.
 
 
-4.10. Worker Node Components: Container Runtime
-
+### 4.10. Worker Node Components: Container Runtime
 Aunque k8s es un motor de orquestación de contenedores, no tiene la capacidad de manejar directamente los contenedores. Para ejecutar y gestionar el ciclo de vida de un contenedor, se requiere de un runtime en el nodo en el que se va a programar un pod y sus contendores. 
 k8s soporta:
 * Docker: utiliza como runtime, containerd, es el más utilizado con k8s.
@@ -296,23 +307,23 @@ k8s soporta:
 * rkt: motor nativo para pods, disponible para imagenes docker.
 * rktlet:
 
-4.11. Worker Node Components: kubelet
+### 4.11. Worker Node Components: kubelet
 
 
-4.12. Worker Node Components: kubelet - CRI shims
-4.13. Worker Node Components: kube-proxy
-4.14. Worker Node Components: Addons
-4.15. Networking Challenges
-4.16. Container-to-Container Communication Inside Pods
-4.17. Pod-to-Pod Communication Across Nodes
-4.18. Pod-to-External World Communication
+### 4.12. Worker Node Components: kubelet - CRI shims
+### 4.13. Worker Node Components: kube-proxy
+### 4.14. Worker Node Components: Addons
+### 4.15. Networking Challenges
+### 4.16. Container-to-Container Communication Inside Pods
+### 4.17. Pod-to-Pod Communication Across Nodes
+### 4.18. Pod-to-External World Communication
 
 DUDAS:
 * Plano de control, que es exactamente?
 * etcd y hosts externos
 
-Chapter 5. Installing Kubernetes
-5. Installing Kubernetes
+## Chapter 5. Installing Kubernetes<a name="chapter5"></a>
+## 5. Installing Kubernetes
 
 
 
@@ -321,8 +332,8 @@ Chapter 5. Installing Kubernetes
 
 
 
-Chapter 6. Minikube - A Local Single-Node Kubernetes Cluster
-6. Minikube - A Local Single-Node Kubernetes Cluster
+## Chapter 6. Minikube - A Local Single-Node Kubernetes Cluster<a name="chapter6"></a>
+## 6. Minikube - A Local Single-Node Kubernetes Cluster
 
 
 
@@ -331,8 +342,8 @@ Chapter 6. Minikube - A Local Single-Node Kubernetes Cluster
 
 
 
-Chapter 7. Accessing Minikube
-7. Accessing Minikube
+## Chapter 7. Accessing Minikube<a name="chapter7"></a>
+## 7. Accessing Minikube
 
 
 
@@ -341,8 +352,8 @@ Chapter 7. Accessing Minikube
 
 
 
-Chapter 8. Kubernetes Building Blocks
-8. Kubernetes Building Blocks
+## Chapter 8. Kubernetes Building Blocks<a name="chapter8"></a>
+## 8. Kubernetes Building Blocks
 
 
 
@@ -351,75 +362,26 @@ Chapter 8. Kubernetes Building Blocks
 
 
 
-Chapter 9. Authentication, Authorization, Admission Control
-9. Authentication, Authorization, Admission Control
+## Chapter 9. Authentication, Authorization, Admission Control<a name="chapter9"></a>
+## 9. Authentication, Authorization, Admission Control
 
+## Chapter 10. Services<a name="chapter10"></a>
+## 10. Services
 
+## Chapter 11. Deploying a Stand-Alone Application<a name="chapter11"></a>
+## 11. Deploying a Stand-Alone Application
 
+## Chapter 12. Kubernetes Volume Management<a name="chapter12"></a>
+## 12. Kubernetes Volume Management
 
+## Chapter 13. ConfigMaps and Secrets<a name="chapter13"></a>
+## 13. ConfigMaps and Secrets
 
+## Chapter 14. Ingress<a name="chapter14"></a>
+## 14. Ingress
 
+## Chapter 15. Advanced Topics<a name="chapter15"></a>
+## 15. Advanced Topics
 
-
-Chapter 10. Services
-10. Services
-
-
-
-
-
-
-
-
-Chapter 11. Deploying a Stand-Alone Application
-11. Deploying a Stand-Alone Application
-
-
-
-
-
-
-
-
-Chapter 12. Kubernetes Volume Management
-12. Kubernetes Volume Management
-
-
-
-
-
-
-
-
-Chapter 13. ConfigMaps and Secrets
-13. ConfigMaps and Secrets
-
-
-
-
-
-
-
-
-Chapter 14. Ingress
-14. Ingress
-
-
-
-
-
-
-
-
-Chapter 15. Advanced Topics
-15. Advanced Topics
-
-
-
-
-
-
-
-
-Chapter 16. Kubernetes Community
-16. Kubernetes Community
+## Chapter 16. Kubernetes Community<a name="chapter16"></a>
+## 16. Kubernetes Community
