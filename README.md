@@ -25,7 +25,7 @@ k8s
 ### 1.1. The legacy Monolith
 This boulder represents the monolith application - sedimented layers of features and redundant logic translated into thousands of lines of code, written in a single, not so modern programming language, based on outdated software architecture patterns and principles.
 
-The new features and improvements added to code complexity, making development more challenging - loading, compiling, and building times increase with every new update. 
+The new features and improvements added to code complexity, making development more challenging - loading, compiling, and building times increase with every new update.
 
 Being a large, single piece of software which continuously grows, it has to run on a single system which has to satisfy its compute, memory, storage, and networking requirements. The hardware of such capacity is both complex and pricey.
 
@@ -796,19 +796,188 @@ $ curl $APISERVER --cert encoded-cert --key encoded-key --cacert encoded-ca
 ## Chapter 8. Kubernetes Building Blocks<a name="chapter8"></a>
 ## 8. Kubernetes Building Blocks
 ## 8.1. Kubernetes Object Model
+Kubernetes tiene un modelo de objetos abundante, que representa diferentes entidades persistentes en el grupo de Kubernetes. Esas entidades describen:
+
+* Qué aplicaciones contenedoras estamos ejecutando y en qué __Node__.
+* Consumo de recursos de la aplicación
+* Diferentes políticas adjuntas a las aplicaciones, como políticas de reinicio/actualización, tolerancia a fallos, etc.
+
+Con cada objeto, declaramos nuestra sección __spec__. El sistema de Kubernetes gestiona la sección __status__ de los objetos, donde registra el estado real del objeto. En un momento dado, el Plano de Control de Kubernetes intenta hacer coincidir el estado real del objeto con el estado deseado del mismo.
+
+Algunos ejemplos de objetos son __Pods__, __ReplicaSets__, __Deployments__, __Namespaces__, etc.
+
+Cuando se crea un objeto, la sección de datos de configuración del objeto que se encuentra debajo del campo __spec__ debe enviarse al API Server de Kubernetes. La sección __spec__ describe el estado deseado, junto con alguna información básica, como el nombre del objeto. La solicitud de la API para crear un objeto debe tener la sección __spec__, así como otros detalles. Aunque el __API Server__ acepta archivos de definición de objetos en formato JSON, la mayoría de las veces proporcionamos dichos archivos en formato YAML, que se convierten por __kubectl__ en una carga útil JSON y se envían al __API Server__.
+
+Ejemplo de un objecto en formato YAML:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.15.11
+        ports:
+        - containerPort: 80
+```
+
+Analizando el código del objecto los campos son los siguientes:
+* El campo __apiVersion__ es el primer campo obligatorio, y especifica el API endpoint en el Api Server al que queremos conectarnos; debe coincidir con una versión existente para el tipo de objeto definido. 
+* El segundo campo obligatorio es __kind__, que especifica el tipo de objeto - en nuestro caso es __Deployment__, pero puede ser __Pod__, __Replicaset__, __Namespace__, __Service__, etc. 
+* El tercer campo requerido, __metadata__, contiene la información básica del objeto, como el __name__, __lables__, __namespace__, etc. Nuestro ejemplo muestra dos campos __spec__ (__spec__ y __spec.template.spec__). 
+* El cuarto campo __spec__, requerido, marca el comienzo del bloque que define el estado deseado del objeto __Deployment__. En nuestro ejemplo, queremos asegurarnos de que 3 __Pods__ están funcionando en un momento dado (__replicas__). Los __Pods__ se crean utilizando la __template__ de __Pods__ definida en __spec.template__. Un objeto anidado, como el __Pod__ que forma parte de un __Deployment__, retiene sus __metadata__ y su __spec__ y pierde la __apiVersión__ y el __kind__ - ambos son reemplazados por la __template__. En __spec.template.spec__, definimos el estado deseado del __Pod__. Nuestro __Pod__ crea un único contenedor que ejecuta la imagen __nginx:1.15.11__ del Docker Hub.
+
+Una vez creado el objeto de despliegue, el sistema de Kubernetes adjunta el campo de __status__ al objeto.
+
+
 ## 8.2. Pods
+Un __Pod__ es el objeto más pequeño y simple de los Kubernetes. Es la unidad de despliegue en los Kubernetes, que representa una única instancia de la aplicación. Un __Pod__ es una colección lógica de __uno o más contenedores__, que:
+
+* Están programados juntos en el mismo host con el __Pod__.
+* Compartir el mismo network __namespace__.
+* Tener acceso a montar el mismo external storage (__volumes__).
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/8.2_Pods.png)
+
+Los __Pods__ son efímeros por naturaleza y no tienen capacidad de auto-curarse a sí mismos. Por eso se usan con __controllers__ que se encargan de la replicación de los __Pods__, la tolerancia a los fallos, la autocuración, etc. Ejemplos de __controllers__ son: __Deployments__, __ReplicaSet__, __ReplicationController__, etc.
+
+Ejemplo de un objeto __Pod__ en formato YAML:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  labels:
+    app: nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.15.11
+    ports:
+    - containerPort: 80
+```
+
+El campo __apiVersion__ debe especificar __v1__ para la definición del objeto __Pod__. El segundo campo obligatorio es el __kind__ que especifica el tipo de objeto __Pod__. El tercer campo requerido, __metadata__, contiene el __name__ y el __label__ del objeto. El cuarto campo requerido, __spec__, marca el comienzo del bloque que define el estado deseado del objeto __Pod__, también llamado __PodSpec__. Nuestro Pod crea un único contenedor que ejecuta la imagen __nginx:1.15.11__ de Docker Hub.
+
+
 ## 8.3. Labels
+Las __Labels__ son pares de __clave-valor__ unidos a objetos kubernetes (por ejemplo, __Pods__, __ReplicaSet__). Las __labels__ se utilizan para organizar y seleccionar un subconjunto de objetos, según los requisitos establecidos. Muchos objetos pueden tener la misma o las mismas __labels__. Las __labels__ no proporcionan unicidad a los objetos. Los __controllers__ utilizan las __labels__ para agrupar lógicamente los objetos desacoplados, en lugar de utilizar los nombres o las identificaciones de los objetos.
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/8.3_Labels.png)
+
+En la imagen de arriba, hemos usado dos __Label__ keys: app y env. Basándonos en nuestros requisitos, hemos dado diferentes valores a nuestros cuatro __Pods__. La __label__ env=dev selecciona y agrupa lógicamente los dos primeros __Pods__, mientras que la __label__ app=frontend selecciona y agrupa lógicamente los dos __Pods__ de la izquierda. Podemos seleccionar uno de los cuatro __Pods__  seleccionando dos Etiquetas: app=frontend y env=qa.
+
+
 ## 8.4. Label Selectors
+Los __controllers__ utilizan __Label Selectors__ para seleccionar un subconjunto de objetos. Kubernetes soporta dos tipos de __Selectors__:
+
+* __Equality-Based Selectors__ (basados en igualdad):
+Permiten filtrar los objetos en función de las key-value de las __Labels__. El emparejamiento se logra usando los operadores __=__, __==__ (iguales, usados indistintamente), o __!=__ (no iguales). Por ejemplo, con __env==dev__ o __env=dev__ estamos seleccionando los objetos en los que la clave __Label__ key-value, env-dev. 
+* __Set-Based Selectors__ (basados en conjunto):
+Permiten filtrar los objetos en base a un conjunto de valores. Podemos utilizar los operadores __in__, __notin__ para __Label values__, y __exist/does not exist__ para __Label keys__. Por ejemplo, con __env in (dev,qa)__ seleccionamos objetos en los que __env__ esté como __dev o qa__; con __!app__ seleccionamos objetos sin Label key __app__.
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/8.4_Selectors.png)
+
+
 ## 8.5. ReplicationControllers
+Aunque ya no es un método recomendado, un __ReplicationController__ es un __controller__ que asegura que un número específico de __replicas__ de un __Pod__ esté funcionando en un momento dado. Generalmente, no desplegamos un __Pod__ de forma independiente, ya que no podría reiniciarse por sí mismo si se terminara por error. El método recomendado es utilizar algún tipo de contolador de replicación para crear y gestionar los __Pods__. 
+
+El controlador por defecto es un __Deployment__ que configura un __ReplicaSet__ para gestionar el ciclo de vida de los __Pods__.
+
+
 ## 8.6. ReplicaSets I
+Un __ReplicaSet__ es la próxima generación de __ReplicationController__.
+
+> Los __ReplicaSets__ soportan tanto __selectors__ basados en igualdad como en conjuntos, mientras que los __ReplicationControllers__ sólo soportan selectores basados en igualdad. Actualmente, esta es la única diferencia.
+
+Con la ayuda del __ReplicaSet__, podemos escalar el número de __Pods__ que ejecutan una imagen específica de la aplicación del contenedor. La escalada puede ser realizada manualmente o a través del uso de un __autoscaler__.
+
+A continuación, pueden ver una representación gráfica de un __ReplicaSet__, donde hemos establecido el número de __replicas__ a 3 para un __Pod__.
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/8.6_ReplicaSet.png)
+
+
 ## 8.7. ReplicaSets II
+Continuando con el mismo ejemplo y supongamos que una de los __Pods__ se ve obligado a terminar (debido a la insuficiencia de recursos, el tiempo de espera, etc.), y el estado actual ya no se corresponde con el estado deseado.
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/8.7_ReplicaSet.png)
+
+
 ## 8.8. ReplicaSets III
+El __ReplicaSet__ detectará que el estado actual ya no coincide con el estado deseado. El __ReplicaSet__ creará un __Pod__ adicional, asegurando así que el estado actual coincide con el estado deseado.
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/8.8_ReplicaSet.png)
+
+Los __ReplicaSets__ pueden ser usados independientemente como __controllers__ de __Pod__, pero sólo ofrecen un conjunto limitado de características. 
+
+> Un conjunto de características complementarias son proporcionadas por __Deployments__, los controladores recomendados para la orquestación de __Pods__. __Deployments__ gestiona la creación, eliminación y actualización de los __Pods__. Un __Deployment__ crea automáticamente un __ReplicaSet__, que luego crea un __Pod__. No hay necesidad de administrar los __ReplicaSets__ y los __Pods__ por separado, el __Deployment__ los administrará en nuestro nombre.
+
+
 ## 8.9. Deployments I
+Los __Deployments__ proporcionan actualizaciones declarativas de los __Pods__ y los __ReplicaSets__. El __DeploymentController__ es parte del administrador de controladores del __Master Node__, y asegura que el estado actual siempre coincida con el estado deseado. Permite actualizaciones y degradaciones de aplicaciones sin problemas a través de despliegues y retrocesos, y gestiona directamente sus __ReplicaSets__ para el escalado de las aplicaciones. 
+
+En el siguiente ejemplo, un nuevo __Deployment__ crea __ReplicaSet__ A que luego crea 3 __Pods__, con cada __Pods Template__ configurada para ejecutar una imagen de contenedor __nginx:1.7.9__. En este caso, el __ReplicaSet__ A se asocia con __nginx:1.7.9__ representando un estado del __Deployment__. Este estado particular se registra como la Revisión 1.
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/8.9_Deployment.png)
+
+
 ## 8.10. Deployments II
+Ahora, en el __Deployment__, cambiamos la __Pdos Template__ y actualizamos la imagen del contenedor de __nginx:1.7.9__ a __nginx:1.9.1__. El __Deployment__ dispara un nuevo __ReplicaSet__ B para la nueva imagen del contenedor versionada 1.9.1 y esta asociación representa un nuevo estado registrado del __Deployment__, Revisión 2. Transicionará los dos __ReplicaSets__, desde el __ReplicaSet__ A con 3 __Pods__ versionados 1.7.9 al nuevo __ReplicaSet__ B con 3 nuevos __Pods__ versionados 1.9.1, o desde la Revisión 1 a la Revisión 2, es una actualización continua del __Deployment__. 
+
+Un rolling update se activa cuando actualizamos __Pods Template__ para un despliegue. Operaciones como escalar o etiquetar el despliegue no activan una rolling update, por lo tanto no cambian el número de revisión.
+
+Una vez que se haya completado el rolling update, el __Deployment__ mostrará tanto las réplicas de los conjuntos A y B, donde A se escala a 0 __Pods__, y B se escala a 3 __Pods__. Así es como el __Deployment__ registra sus ajustes de configuración de estado previo, como Revisiones. 
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/8.10_Deployment.png)
+
+
 ## 8.11. Deployments III
+Una vez que el __ReplicaSet__ B y sus 3 __Pods__ versionados 1.9.1 están listos, el __Deployment__ comienza a gestionarlos activamente. Sin embargo, el __Deployment__ mantiene sus estados de configuración previos guardados como Revisiones que juegan un factor clave en la capacidad de __rollback__ del __Deployment__ - regresando a un estado de configuración previo conocido. En nuestro ejemplo, si el rendimiento del nuevo nginx:1.9.1 no es satisfactorio, el __Deployment__ puede ser retrocedido a una Revisión previa, en este caso de la Revisión 2 a la Revisión 1 ejecutando nginx:1.7.9. 
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/8.11_Deployment.png)
+
+
 ## 8.12. Namespaces 
+Si varios usuarios y equipos utilizan el mismo clúster de Kubernetes podemos dividir el clúster en subclústeres virtuales utilizando __Namespaces__. Los nombres de los recursos/objetos creados dentro de un __Namespace__ son únicos, pero no en los __Namespaces__ del cluster.
 
+Para listar todos los __Namespaces__, podemos ejecutar el siguiente comando:
 
+```
+$ kubectl get namespaces
+NAME              STATUS       AGE
+default           Active       11h
+kube-node-lease   Active       11h
+kube-public       Active       11h
+kube-system       Active       11h
+```
+
+Generalmente, Kubernetes crea cuatro __Namespaces__ por defecto: 
+* __kube-system:__
+Contiene los objetos creados por el sistema, principalmente los agentes del plano de control.
+* __kube-public:__
+Es un __namespace__ inseguro y legible por cualquiera, utilizado para la exposición de información pública no sensible sobre el cluster.
+* __kube-node-lease:__
+*******************************************************************
+* __default:__
+Contiene los objetos y recursos creados por los administradores y desarrolladores.
+
+El último espacio de nombres es kube-node-lease, que contiene objetos de nodo de alquiler utilizados para los datos de los latidos del nodo. Sin embargo, una buena práctica es crear más espacios de nombres para virtualizar el grupo para los usuarios y los equipos de desarrollo.
+
+Con las __Resource Quotas__, podemos dividir los recursos del clúster dentro de __Namespaces__.
 
 ## Chapter 9. Authentication, Authorization, Admission Control<a name="chapter9"></a>
 ## 9. Authentication, Authorization, Admission Control
