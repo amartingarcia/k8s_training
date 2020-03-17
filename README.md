@@ -981,14 +981,463 @@ Con las __Resource Quotas__, podemos dividir los recursos del clúster dentro de
 
 ## Chapter 9. Authentication, Authorization, Admission Control<a name="chapter9"></a>
 ## 9. Authentication, Authorization, Admission Control
+Cada solicitud de API que llega al __API Server__ tiene que pasar por tres etapas diferentes antes de ser aceptada por el servidor y actuar en consecuencia:
+* Authentication.
+* Authorization
+* Admission Control stages of Kubernetes API requests.
+
+
 ## 9.1. Authentication, Authorization, and Admission Control - Overview
+Para acceder y administrar cualquier recurso u objeto de Kubernetes en el clúster, necesitamos acceder a un punto final de la API específico en el servidor de la API. Cada solicitud de acceso pasa por las tres etapas siguientes:
+
+* Authentication:
+Inicia la sesión de un usuario.
+* Authorization:
+Autoriza las solicitudes de API añadidas por el usuario conectado.
+* Admission Control:
+Módulos de software que pueden modificar o rechazar las solicitudes en base a algunas comprobaciones adicionales, como una __Quota__ preestablecida. 
+
+La siguiente imagen muestra las etapas anteriores:
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/9.1_AccesingAPI.png)
+
 ## 9.2. Authentication I
+Kubernetes no tiene un objeto llamado usuario, ni almacena nombres de usuario u otros detalles relacionados en su almacén de objetos. Sin embargo, incluso sin eso, los Kubernetes pueden utilizar los nombres de usuario para el control de acceso y el registro de solicitudes, que exploraremos en este capítulo.
+
+Kubernetes tiene dos tipos de usuarios:
+
+* Usuarios normales
+Se gestionan fuera del clúster de Kubernetes a través de servicios independientes como certificados de usuario/cliente, un archivo con nombres de usuario/contraseñas, cuentas de Google, etc.
+* Cuentas de servicio
+Con los usuarios de la Cuenta de Servicio, los procesos del grupo se comunican con el servidor de la API para realizar diferentes operaciones. La mayoría de los usuarios de cuentas de servicio se crean automáticamente a través del servidor API, pero también pueden crearse manualmente. Los usuarios de cuentas de servicio están vinculados a un espacio de nombres determinado y montan las credenciales respectivas para comunicarse con el servidor de la API como secretos.
+
+Si se configuran correctamente, los Gobernantes también pueden admitir solicitudes anónimas, junto con las solicitudes de los Usuarios Normales y las Cuentas de Servicio. También se admite la suplantación de identidad de un usuario para que éste pueda actuar como otro usuario, una función útil para los administradores a la hora de solucionar problemas con las políticas de autorización.
+
+
 ## 9.3. Authentication II
+Para la autenticación, Kubernetes utiliza diferentes módulos de autenticación:
+
+* Certificados de cliente
+Para habilitar la autenticación de certificados de cliente, necesitamos hacer referencia a un archivo que contenga una o más autoridades de certificación pasando la opción --client-ca-file=SOMEFILE al servidor de la API. Las autoridades de certificación mencionadas en el archivo validarían los certificados de cliente presentados al servidor de la API. Al final de este capítulo también se encuentra disponible un vídeo de demostración que cubre este tema.
+* Archivo de tokens estático
+Podemos pasar un archivo que contenga tokens portadores predefinidos con la opción --token-auth-file=SOMEFILE al servidor de la API. Actualmente, estos tokens durarían indefinidamente, y no pueden ser cambiados sin reiniciar el servidor de la API.
+* Tokens de arranque
+Esta característica se encuentra actualmente en estado beta y se utiliza principalmente para el bootstrapping de un nuevo grupo de Kubernetes.
+* Archivo de contraseñas estáticas
+Es similar al Archivo de Token Estático. Podemos pasar un archivo que contenga los detalles básicos de autenticación con la opción --basic-auth-file=SOMEFILE. Estas credenciales durarían indefinidamente, y las contraseñas no pueden ser cambiadas sin reiniciar el servidor de la API.
+* Fichas de cuentas de servicio
+Se trata de un autentificador habilitado automáticamente que utiliza fichas al portador firmadas para verificar las solicitudes. Estos tokens se adjuntan a los Pods mediante el Controlador de Admisión de Cuentas de Servicios, que permite a los procesos del grupo hablar con el servidor de la API.
+* Tokens de conexión OpenID
+OpenID Connect nos ayuda a conectar con proveedores de OAuth2, como Azure Active Directory, Salesforce, Google, etc., para descargar la autenticación a servicios externos.
+* Autenticación de Token Webhook
+Con la autenticación basada en Webhook, la verificación de los tokens portadores puede ser descargada a un servicio remoto.
+* Autenticación del proxy
+Si queremos programar una lógica de autenticación adicional, podemos usar un proxy de autenticación.
+
+Podemos habilitar múltiples autenticadores, y el primer módulo para autenticar con éxito la solicitud provoca un cortocircuito en la evaluación. Para tener éxito, debemos habilitar al menos dos métodos: el autentificador de tokens de la cuenta de servicio y uno de los autentificadores de usuario.
+
+
 ## 9.4. Authorization I
+Después de una autenticación exitosa, los usuarios pueden enviar las solicitudes de la API para realizar diferentes operaciones. A continuación, esas solicitudes de API son autorizadas por los gobernantes mediante diversos módulos de autorización.
+
+Algunos de los atributos de las solicitudes de la API que son revisados por los Kubernetes incluyen usuario, grupo, extra, recurso o espacio de nombres, por nombrar algunos. A continuación, estos atributos se evalúan en función de las políticas. Si la evaluación es satisfactoria, entonces la solicitud será permitida, de lo contrario será denegada. De manera similar al paso de autenticación, la autorización tiene múltiples módulos/autorizadores. Se puede configurar más de un módulo para un grupo de Kubernetes, y cada módulo se comprueba en secuencia. Si algún autorizador aprueba o rechaza una solicitud, entonces esa decisión se devuelve inmediatamente.
+
+A continuación, hablaremos de los autorizadores que son apoyados por los Kubernetes.
+
+
 ## 9.5. Authorization II
+Módulos de autorización (Parte 1):
+
+* Autorizador de nodos
+La autorización de nodos es un modo de autorización con fines especiales que autoriza específicamente las solicitudes de API realizadas por kubelets. Autoriza las operaciones de lectura de kubelets para servicios, puntos finales, nodos, etc., y escribe operaciones para nodos, pods, eventos, etc. Para más detalles, por favor revise la documentación de Kubernetes.
+
+* Autorizador del Control de Acceso Basado en Atributos (ABAC)
+Con el autorizador ABAC, Kubernetes concede acceso a las solicitudes de API, que combinan políticas con atributos. En el siguiente ejemplo, el usuario estudiante sólo puede leer Pods en el espacio de nombres lfs158.
+
+```json
+{
+  "apiVersion": "abac.authorization.kubernetes.io/v1beta1",
+  "kind": "Policy",
+  "spec": {
+    "user": "student",
+    "namespace": "lfs158",
+    "resource": "pods",
+    "readonly": true
+  }
+}
+```
+Para habilitar el autorizador de ABAC, necesitaríamos iniciar el servidor de la API con la opción --authorization-mode=ABAC. También necesitaríamos especificar la política de autorización con --authorization-policy-file=PolicyFile.json. Para obtener más detalles, consulte la documentación de Kubernetes.
+
+* Autorizador de Webhook
+Con el autorizador Webhook, Kubernetes puede ofrecer decisiones de autorización a algunos servicios de terceros, que se devolverían verdaderas para una autorización exitosa, y falsas para un fracaso. Para habilitar el autorizador Webhook, necesitamos iniciar el servidor API con la opción --authorization-webhook-config-file=SOME_FILENAME, donde SOME_FILENAME es la configuración del servicio de autorización remota. Para obtener más detalles, consulte la documentación de Kubernetes.
+
 ## 9.6. Authorization III
+Módulos de autorización (Parte 2):
+
+* Autorizador del control de acceso basado en funciones (RBAC)
+En general, con el RBAC podemos regular el acceso a los recursos en base a los roles de los usuarios individuales. En los Kubernetes, podemos tener diferentes roles que pueden ser adjuntados a temas como usuarios, cuentas de servicio, etc. Al crear los roles, restringimos el acceso a los recursos mediante operaciones específicas, como crear, obtener, actualizar, parchear, etc. Estas operaciones se denominan verbos.
+
+En RBAC, podemos crear dos tipos de roles:
+
+    * Rol
+      Con Role, podemos conceder acceso a los recursos de un espacio de nombres específico.
+
+    * ClusterRole
+      La función de grupo puede utilizarse para conceder los mismos permisos que la función, pero su ámbito de aplicación abarca todo el grupo.
+
+      En este curso, nos centraremos en el primer tipo, el Rol. A continuación encontrarán un ejemplo:
+
+```yaml
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: lfs158
+  name: pod-reader
+rules:
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["pods"]
+  verbs: ["get", "watch", "list"]
+
+```
+Como pueden ver, crea un papel de lector de pods, que sólo tiene acceso a leer los Pods de lfs158 Namespace. Una vez creado el rol, podemos vincular a los usuarios con RoleBinding.
+
+Hay dos tipos de RoleBindings:
+
+__RoleBinding__
+Nos permite vincular a los usuarios al mismo espacio de nombres que un Rol. También podríamos referirnos a un Rol del Cluster en RoleBinding, lo cual otorgaría permisos a los recursos del espacio de nombres definidos en el Rol del Cluster dentro del espacio de nombres de RoleBinding.
+
+__ClusterRoleBinding__
+Nos permite conceder acceso a los recursos a nivel de grupo y a todos los Espacios de Nombres.
+
+En este curso, nos centraremos en el primer tipo, RoleBinding. A continuación, encontrarán un ejemplo:
+
+```yaml
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: pod-read-access
+  namespace: lfs158
+subjects:
+- kind: User
+  name: student
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io
+
+```
+Como pueden ver, da acceso al usuario estudiante para leer los Pods de lfs158 Namespace.
+
+Para habilitar el autorizador RBAC, necesitaríamos iniciar el servidor de la API con la opción --authorization-mode=RBAC. Con el autorizador RBAC, configuramos dinámicamente las políticas. Para obtener más detalles, consulte la documentación de Kubernetes.
+
+
 ## 9.7.Admission Control
+El control de admisión se utiliza para especificar las políticas de control de acceso granular, que incluyen la autorización de contenedores privilegiados, la comprobación de la cuota de recursos, etc. Forzamos estas políticas usando diferentes controladores de admisión, como ResourceQuota, DefaultStorageClass, AlwaysPullImages, etc. Sólo entran en vigor después de que las solicitudes de la API son autenticadas y autorizadas.
+
+Para utilizar los controles de admisión, debemos iniciar el servidor de la API de Kubernetes con los plugins --enable-admission-plugins, que toma una lista ordenada y delimitada por comas de los nombres de los controladores:
+
+```yaml
+--enable-admission-plugins=NamespaceLifecycle,ResourceQuota,PodSecurityPolicy,DefaultStorageClass
+```
+
+Kubernetes tiene algunos controladores de admisión habilitados por defecto. Para más detalles, revise la documentación de Kubernetes.
+
+
 ## 9.8. Authentication and Authorization Exercise Guide
+Esta guía de ejercicios asume el siguiente entorno, que por defecto utiliza el certificado y la clave de /var/lib/minikube/certs/, y el modo RBAC para la autorización:
+
+            Minikube v1.0.1
+            Kubernetes v1.14.1
+            Docker 18.06.3-ce
+
+Esta guía de ejercicios se puede utilizar junto con el vídeo de demostración que sigue en la página siguiente y se ha actualizado para el entorno mencionado anteriormente, mientras que el vídeo presenta una distribución de Minikube más antigua con Kubernetes v1.9. 
+
+Iniciar Minikube:
+
+```
+$ minikube start
+```
+
+Ver el contenido del archivo de configuración del cliente kubectl, observando el único minicubo de contexto y el único minicubo de usuario, creado por defecto:
+
+```yaml
+$ kubectl config view
+
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority: /home/student/.minikube/ca.crt
+    server: https://192.168.99.100:8443
+  name: minikube
+contexts:
+- context:
+    cluster: minikube
+    user: minikube
+  name: minikube
+current-context: minikube
+kind: Config
+preferences: {}
+users:
+- name: minikube
+  user:
+    client-certificate: /home/student/.minikube/client.crt
+    client-key: /home/student/.minikube/client.key
+```
+
+Create lfs158 namespace:
+
+```
+$ kubectl create namespace lfs158
+
+namespace/lfs158 created
+```
+
+Create rbac directory and cd into it:
+
+```
+$ mkdir rbac
+
+$ cd rbac/
+```
+
+Create a private key for the student user with openssl tool, then create a certificate signing request for the student user with openssl tool:
+
+```
+~/rbac$ openssl genrsa -out student.key 2048
+
+Generating RSA private key, 2048 bit long modulus (2 primes)
+.................................................+++++
+.........................+++++
+e is 65537 (0x010001)
+
+~/rbac$ openssl req -new -key student.key -out student.csr -subj "/CN=student/O=learner"
+```
+
+Create a YAML configuration file for a certificate signing request object, and save it with a blank value for the request field: 
+
+```yaml
+~/rbac$ vim signing-request.yaml
+
+apiVersion: certificates.k8s.io/v1beta1
+kind: CertificateSigningRequest
+metadata:
+  name: student-csr
+spec:
+  groups:
+  - system:authenticated
+  request: <assign encoded value from next cat command>
+  usages:
+  - digital signature
+  - key encipherment
+  - client auth
+```
+
+View the certificate, encode it in base64, and assign it to the request field in the signing-request.yaml file:
+
+```yaml
+~/rbac$ cat student.csr | base64 | tr -d '\n'
+
+LS0tLS1CRUd...1QtLS0tLQo=
+
+~/rbac$ vim signing-request.yaml
+
+apiVersion: certificates.k8s.io/v1beta1
+kind: CertificateSigningRequest
+metadata:
+  name: student-csr
+spec:
+  groups:
+  - system:authenticated
+  request: LS0tLS1CRUd...1QtLS0tLQo=
+  usages:
+  - digital signature
+  - key encipherment
+  - client auth
+```
+
+Create the certificate signing request object, then list the certificate signing request objects. It shows a pending state:
+
+```
+~/rbac$ kubectl create -f signing-request.yaml
+
+certificatesigningrequest.certificates.k8s.io/student-csr created
+
+~/rbac$ kubectl get csr
+
+NAME          AGE   REQUESTOR       CONDITION
+student-csr   27s   minikube-user   Pending
+```
+
+Approve the certificate signing request object, then list the certificate signing request objects again. It shows both approved and issued states:
+
+```
+~/rbac$ kubectl certificate approve student-csr
+
+certificatesigningrequest.certificates.k8s.io/student-csr approved
+
+~/rbac$ kubectl get csr
+
+NAME          AGE   REQUESTOR       CONDITION
+student-csr   77s   minikube-user   Approved,Issued
+```
+
+Extract the approved certificate from the certificate signing request, decode it with base64 and save it as a certificate file. Then view the certificate in the newly created certificate file:
+
+```
+~/rbac$ kubectl get csr student-csr -o jsonpath='{.status.certificate}' | base64 --decode > student.crt
+
+~/rbac$ cat student.crt
+
+-----BEGIN CERTIFICATE-----
+MIIDGzCCA...
+...
+...NOZRRZBVunTjK7A==
+-----END CERTIFICATE-----
+```
+
+Configure the student user's credentials by assigning the key and certificate: 
+
+```
+~/rbac$ kubectl config set-credentials student --client-certificate=student.crt --client-key=student.key
+
+User "student" set.
+```
+
+Create a new context entry in the kubectl client's configuration file for the student user, associated with the lfs158 namespace in the minikube cluster:
+
+```
+~/rbac$ kubectl config set-context student-context --cluster=minikube --namespace=lfs158 --user=student
+
+Context "student-context" created.
+```
+
+View the contents of the kubectl client's configuration file again, observing the new context entry student-context, and the new user entry student:
+
+```
+~/rbac$ kubectl config view
+```
+
+```yaml
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority: /home/student/.minikube/ca.crt
+    server: https://192.168.99.100:8443
+  name: minikube
+contexts:
+- context:
+    cluster: minikube
+    user: minikube
+  name: minikube
+- context:
+    cluster: minikube
+    namespace: lfs158
+    user: student
+  name: student-context
+current-context: minikube
+kind: Config
+preferences: {}
+users:
+- name: minikube
+  user:
+    client-certificate: /home/student/.minikube/client.crt
+    client-key: /home/student/.minikube/client.key
+- name: student
+  user:
+    client-certificate: /home/student/rbac/student.crt
+    client-key: /home/student/rbac/student.key
+```
+
+While in the default minikube context, create a new deployment in the lfs158 namespace:
+
+```
+~/rbac$ kubectl -n lfs158 create deployment nginx --image=nginx:alpine
+
+deployment.apps/nginx created
+```
+
+From the new context student-context try to list pods. The attempt fails because the student user has no permissions configured for the student-context:
+
+```
+~/rbac$ kubectl --context=student-context get pods
+
+Error from server (Forbidden): pods is forbidden: User "student" cannot list resource "pods" in API group "" in the namespace "lfs158"
+```
+
+The following steps will assign a limited set of permissions to the student user in the student-context. 
+
+Create a YAML configuration file for a pod-reader role object, which allows only get, watch, list actions in the lfs158 namespace against pod objects. Then create the role object and list it from the default minikube context, but from the lfs158 namespace:
+
+```
+~/rbac$ vim role.yaml
+```
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pod-reader
+  namespace: lfs158
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "watch", "list"]
+```
+
+```
+~/rbac$ kubectl create -f role.yaml
+
+role.rbac.authorization.k8s.io/pod-reader created
+
+~/rbac$ kubectl -n lfs158 get roles
+
+NAME         AGE
+pod-reader   57s
+```
+
+Create a YAML configuration file for a rolebinding object, which assigns the permissions of the pod-reader role to the student user. Then create the rolebinding object and list it from the default minikube context, but from the lfs158 namespace:
+
+```
+~/rbac$ vim rolebinding.yaml
+```
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pod-read-access
+  namespace: lfs158
+subjects:
+- kind: User
+  name: student
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io
+```
+
+```
+~/rbac$ kubectl create -f rolebinding.yaml 
+
+rolebinding.rbac.authorization.k8s.io/pod-read-access created
+
+~/rbac$ kubectl -n lfs158 get rolebindings
+
+NAME              AGE
+pod-read-access   23s
+```
+
+Now that we have assigned permissions to the student user, we can successfully list pods from the new context student-context.
+
+```
+~/rbac$ kubectl --context=student-context get pods
+
+NAME                    READY   STATUS    RESTARTS   AGE
+nginx-77595c695-f2xmd   1/1     Running   0          7m41s
+```
+
 
 ## Chapter 10. Services<a name="chapter10"></a>
 ## 10. Services
