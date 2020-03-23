@@ -23,15 +23,15 @@ k8s
 ## Chapter 1. From Monolith to Microservices<a name="chapter1"></a>
 ## 1. From Monolith to Microservices
 ### 1.1. The legacy Monolith
-This boulder represents the monolith application - sedimented layers of features and redundant logic translated into thousands of lines of code, written in a single, not so modern programming language, based on outdated software architecture patterns and principles.
+La roca, representa la aplicación del monolito (capas sedimentadas de características y lógica redundante traducidas en miles de lineas de código, escritas en un lenguaje de programación no tan moderno, basado en patrones y principios de arquitectura anticuados)
 
-The new features and improvements added to code complexity, making development more challenging - loading, compiling, and building times increase with every new update.
+Las nuevas características y mejoras añaden complejidad al código, haciendo el desarrollo más desafiante, los tiempos de carga, compilación y construcción aumentan con cada nueva actualización.
 
-Being a large, single piece of software which continuously grows, it has to run on a single system which has to satisfy its compute, memory, storage, and networking requirements. The hardware of such capacity is both complex and pricey.
+Al ser un software grande y único que crece continuamente, tiene que funcionar en un solo sistema que tiene que satisfacer requisitos de computación, memoria, almacenamiento y redes. El hardware de tal capacidad es a la vez complejo y costoso.
 
-Since the entire monolith application runs as a single process, the scaling of individual features of the monolith is almost impossible. It internally supports a hardcoded number of connections and operations. However, scaling the entire application means to manually deploy a new instance of the monolith on another server, typically behind a load balancing appliance - another pricey solution.
+Como toda la aplicación del monolito se ejecuta como un solo proceso, la ampliación de las características individuales del monolito es casi imposible. Internamente soporta un número codificado de conexiones y operaciones. Sin embargo, el escalado de toda la aplicación significa desplegar manualmente una nueva instancia del monolito en otro servidor, típicamente detrás de un balanceador de carga, otra solución costosa.
 
-During upgrades, patches or migrations of the monolith application - downtimes occur and maintenance windows have to be planned as disruptions in service are expected to impact clients. While there are solutions to minimize downtimes to customers by setting up monolith applications in a highly available active/passive configuration, it may still be challenging for system engineers to keep all systems at the same patch level.
+Durante las actualizaciones, parches o migraciones de la aplicación del monolito, se producen tiempos de inactividad y hay que planificar ventanas de mantenimiento ya que se espera que las interrupciones del servicio afecten a los clientes. Si bien existen soluciones para minimizar los tiempos de inactividad de los clientes mediante la configuración de las aplicaciones de monolitos en una configuración activa/pasiva en HA, todavía puede ser un desafío para los ingenieros de sistemas mantener todos los sistemas al mismo nivel de parches.
 
 
 ### 1.2. The Modern Microservice.
@@ -39,51 +39,57 @@ Similitudes:
 - Monolito       --> Gran roca
 - Microservicios --> Guijarros
 
-Los guijarros representan la totalidad de la roca individualmente. También son faciles de seleccionar y agrupar en base al color, tamaño y forma.
+Los guijarros representan la totalidad de la roca individualmente. Además son faciles de seleccionar y agrupar en base al color, tamaño y forma.
 Los microservicios pueden ser desplegados individualmente en servidores separados provistos con los recuros necesarios para cada servicio.
-La arquitectura basada en microservicios está alineada con la Arquitectura Dirigida por Eventos y Arquitectura Orientada a Servicios, donde las aplicaciones complejas están compuestas por pqeueños procesos que se comunican entre si por medio de APIs.
+La arquitectura basada en microservicios está alineada con la Arquitectura Dirigida por Eventos y Arquitectura Orientada a Servicios, donde las aplicaciones complejas están compuestas por pequeños procesos que se comunican entre si por medio de APIs.
 Los microservicios se desarrollan en un lenguaje moderno y el más adecuado para cada servicio. Permite elegir hardware para cada servicio.
-La naturaleza distribuida de los servicios añade complejidad a la arquitectura, pero añade beneficios en cuanto a la escalabilidad. Permite no tener inactividad.
+La naturaleza distribuida de los servicios añade complejidad a la arquitectura, pero añade beneficios en cuanto a la escalabilidad, además de no tener inactividad.
 
 
 ### 1.3. Refactoring
 Una aplicación multiproceso (monolito), no puede funcionar como un microservicio. Por lo tanto, se necesita refactorizar (Big-Bang ó refactorización incremental):
-* __Big-bang:__                    Bloquea el desarrollo y nuevas características para centrarse en la refactorización
-* __Refactorización incremental:__ Permite que se desarrollen nuevas características y se apliquen como microservicios modernos que puedan comunicarse con la API. 
-                               Mientras tantos las características actuales del monolito se refactorizaran, y este irá desvaneciendo lentamente.
+* __Big-bang:__                    
+Bloquea el desarrollo y nuevas características para centrarse en la refactorización.
+* __Refactorización incremental:__ 
+Permite que se desarrollen nuevas características y se apliquen como microservicios modernos que puedan comunicarse con la API. 
+Mientras tantos las características actuales del monolito se refactorizaran, y este irá desapareciendo.
 
 
 ### 1.4. Challenges
 Para algunas aplicaciones, puede ser más económico reconstruirlas que refactorizarlas.
-Las aplicaciones estrechamente unidas a almacenes de datos, son candidatas pobres a la refactorización.
+Las aplicaciones estrechamente unidas a bases de datos, son candidatas poco válidas para la refactorización.
 
 Una vez que el monolito ha sobrevivido a la refactorización, el siguiente reto es diseñar mecanismos o encontrar herramientas adecuadas para mantener vivos todos los módulos desacoplados.
-Si se despliegan muchos módulos en un solo servidor, lo más probable es que las diferentes librerias y el entorno de tiempo de ejecución, puedan entrar en conflicto. 
+Si se despliegan muchos módulos en un solo servidor, lo más probable es que las diferentes librerias y el entorno del runtime, puedan entrar en conflicto. 
 Esto obliga a separar modulos por servidor, y no es una forma económica de gestión de recursos. 
 Entonces aparecieron los contenedores, que proporcionan entornos encapsulados. 
-El amplio soporte de los contenedores aseguró la portabilidad  de las aplicaciones del metal a las máquinas virtuales, pero esta vez con múltiples aplicaciones desplegadas en el mismo servidor.
+El amplio soporte de los contenedores aseguró la portabilidad  de las aplicaciones del bare-metal a las máquinas virtuales, pero esta vez con múltiples aplicaciones desplegadas en el mismo servidor.
 
 
 
 ## Chapter 2. Container Orchestration<a name="chapter2"></a>
 ## 2. Container Orchestration
 ### 2.1. What Are Containers?
-* Contenedores: Son aplicaciones que ofrecen alto rendimiento y escalabilidad. Son los más adecuados para ofrecer microservicios, ya que proporcionan entornos virtuales portatiles y aislados.
-!image 2.1.png
+* __Contenedores:__ 
+Son aplicaciones que ofrecen alto rendimiento y escalabilidad. Son los más adecuados para ofrecer microservicios, ya que proporcionan entornos virtuales portatiles y aislados.
 
-* Microservicios: Son aplicaciones ligeras escritas en varios lenguajes modernos, con dependencias, librerias y requisitos ambientales especificos. 
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/2.1_Containers.png)
+
+* __Microservicios:__
+Son aplicaciones ligeras escritas en varios lenguajes modernos con dependencias, librerias y requisitos especificos. 
 Los contenedores encapsulan los microservicios y sus dependencias pero no los ejecutan directamente. Los contenedores ejecutan imágenes de contenedores.
 
-* Imagen de contenedor: Agrupa la aplicación junto con su tiempo de ejecución y sus dependencias, ofreciendo un entorno ejecutable aislado.
+* __Imagen de contenedor:__
+Agrupa la aplicación junto con su runtime y sus dependencias, ofreciendo un entorno ejecutable aislado.
 
 
 ### 2.2. What Is Container Orchestration?
 En los entornos de desarrollo la ejecución de contenedores en un solo host, puede ser una opción. Sin embargo, para entornos productivos ya no es una opción viable, ya que debe cumplir una seria de requisitos:
-* Tolerancia a fallos
-* Escalabildiad a petición
+* Tolerancia a fallos.
+* Escalabildiad a petición.
 * Uso óptimo de los recursos.
 * Autodescubrimiento para la comunicación entre si.
-* Accesibilidad desde el exterior
+* Accesibilidad desde el exterior.
 * Actualizaciones y rollbacks sin downtime.
 
 Los orquestadores de contenedores es una herramienta que permite automatizar los despliegues y la gestión de contenedores, al mismo tiempo que cumple con los requisitos anteriores. 
@@ -101,16 +107,16 @@ Algunos orquestadores:
 ### 2.4. Why Use Container Orchestrators?
 Aunque podemos mantener manualmente un par de contenedores, los orquestadores facilitan mucho las tareas.
 
-La mayoría de contenedores puede:
-* Agrupar host mientras se crear un cluster
+La mayoría de contenedores pueden:
+* Agrupar host mientras se crear un cluster.
 * Programar contenedores para que corran en cluster en funcion de la disponibilidad de los recursos.
 * Permite que los contenedores de cluster se comuniquen entre si.
-* Gestionar y optimizar el uso de recursos
+* Gestionar y optimizar el uso de recursos.
 * Permitir una implementación de políticas para el acceso seguro a las aplicaciones que corren en los contenedores.
 
 
 ### 2.5. Where to Deploy Container Orchestrators?
-Los orquestadores pueden ser desplegados en bare metal, máquinas virtuales, on-premise, o nube pública.
+Los orquestadores pueden ser desplegados en bare-metal, máquinas virtuales, on-premise o nube pública.
 
 
 
@@ -119,39 +125,46 @@ Los orquestadores pueden ser desplegados en bare metal, máquinas virtuales, on-
 ### 3.1. What Is Kubernetes?
 Kubernetes es un sistema de código abierto (OpenSource) para automatizar el despliegue, el escalado y la gestión de aplicaciones en contenedores.
 
-Kubernetes viene del griego, que significa timonel. También se le conoce como k8s.
-Kubernetes, se inspira mucho en el sistema de Google Borg, un orquestador de contenedores escrito en Go.
-Kubernetes fue iniciado por Google, y con el lanzamiento de la v1 en 2015, fue donado a CNCF
+Viene del griego, que significa timonel. También se le conoce como k8s.
+Se inspira mucho en el sistema de __Google Borg__, un orquestador de contenedores escrito en Go.
+Kubernetes fue iniciado por Google, y con el lanzamiento de la v1 en 2015, fue donado a CNCF.
 
-3.2. From Borg to Kubernetes
+### 3.2. From Borg to Kubernetes
 El sistema de Borg de Google, es un administrador de Clusteres que ejecuta cientos de miles de trabajos, de muchos miles de aplicaciones diferentes, a través de varios clusteres, cada uno con decenas de miles de máquinas.
 
-Durante más de una década, Borg ha sido el secreto de Google, gestionando servicios como Gmail, Drive, Maps, etc
+Durante más de una década, Borg ha sido el secreto de Google, gestionando servicios como Gmail, Drive, Maps, etc.
 
-Algunas características de kubernetes, son heredadas de Borg, son:
-* API Servers
-* Pods
-* IP-per-Pod
-* Services
-* Labels
+Algunas características de kubernetes  heredadas de Borg son:
+* __API Servers__
+* __Pods__
+* __IP-per-Pod__
+* __Services__
+* __Labels__
 
 
 ### 3.3. Kubernetes Features I
 Kubernetes ofrece un conjunto de características para la orquestación:
-* Automatic bin packing: programan en base a los recuros necesarios y limitaciones, para maximizar su utilización sin sacrificar la disponibilidad.
-* Self-healing: Reemplaza y reprograma automáticamente los contenedores de los donos que fallan. Mata y reinicia los contenedores que no responden a los HealthCheck. También, enviata que se dirija el tráfico a contenedores que no responden.
-* Horizontal scaling: se escalan manual o automáticamente las aplicaciones, en base a métricas.
-* Service discovery and Load Balancing: Los contenedores reciben sus propias direcciones IPs, mientras que se asigna un único DNS a un conjunto de contenedores para ayudar al balanceo de carga.
+* __Automatic bin packing:__
+Programan en base a los recuros necesarios y limitaciones, para maximizar su utilización sin sacrificar la disponibilidad.
+* __Self-healing:__
+Reemplaza y reprograma automáticamente los contenedores de los __Nodes__ que fallan. Mata y reinicia los contenedores que no responden a los HealthCheck. También, envita que se dirija el tráfico a contenedores que no responden.
+* __Horizontal scaling:__
+se escalan manual o automáticamente las aplicaciones, en base a métricas.
+* __Service discovery and Load Balancing:__
+Los contenedores reciben sus propias direcciones IPs, mientras que se asigna un único DNS a un conjunto de contenedores para ayudar al balanceo de carga.
 
 
 ### 3.4. Kubernetes Features II
-* Automated rollouts and rollbacks: Despliegan y retroceden sin problema las actualizaciones de la aplicación y los cambios de configuración, supervisando constantemente la salud de la aplicación, evitando así inactividad.
-* Secret and configuration management: Gestiona los secretos y detalles de la configuración de una aplicación por separado de la imagen del contenedor, con el fin de evitar la reconsctrucción de la imagen respectiva. Los secretos consisten en información confidencial que se le pasa a la aplicación sin revelar el contenido, como en GitHub.
-* Storage orchestration: montan automáticamente soluciones de almacenamiento definidas por software en contenedores de almacenamiento local, proveedores de nube externos o sistemas de almacenamiento en red.
+* __Automated rollouts and rollbacks:__
+Despliegan y realizan __rollback__ sin problema en base a las actualizaciones de la aplicación y los cambios de configuración, supervisando constantemente la salud de la aplicación, evitando así inactividad.
+* __Secret and configuration management:__
+Gestiona los __secrets__ y detalles de la configuración de una aplicación por separado de la imagen del contenedor, con el fin de evitar la reconsctrucción de la imagen respectiva. Los __secrets__ consisten en información confidencial que se le pasa a la aplicación sin revelar el contenido, como en GitHub.
+* __Storage orchestration:__
+Montan automáticamente soluciones de __storage__ definidas por software en contenedores de almacenamiento local, proveedores de nube externos o sistemas de almacenamiento en red.
+* __Batch execution:__
+Apoya la ejecución por lotes, los trabajos de larga duración y reemplaza los contenedores que fallan.
 
-* Batch execution: apoya la ejecución por lotes, los trabajos de larga duración y reemplaza los contenedores que fallan.
-
-Muchas otras características están por llegar aunque se encuentran en base beta. Otras, ya están estabales y aportan grandes beneficios como el control de acceso basado en roles (RBAC), estable desde la 1.8
+Muchas otras características están por llegar aunque se encuentran en base beta. Otras, ya están estabales y aportan grandes beneficios como el control de acceso basado en roles (RBAC), estable desde la 1.8.
 
 
 ### 3.5. Why Use Kubernetes?
@@ -203,7 +216,7 @@ Para k8s, CNCF:
 * Proporciona una licencia para escanear el código del nucleo y del proveedor.
 * Ofrece oritentación jurídica sobre cuestiones de patentes y derechos de autor.
 * Crea un plan de estudios de aprendizaje de código abierto, formación y certificación tanto para los administradores como para los desarrolladores de k8s.
-* Gestiona un gruop de trabajo de conformidad con el software.
+* Gestiona un grupo de trabajo de conformidad con el software.
 * Comercializa activamente Kubernetes.
 
 
@@ -211,13 +224,13 @@ Para k8s, CNCF:
 ## Chapter 4. Kubernetes Architecture<a name="chapter4"></a>
 ## 4. Kubernetes Architecture
 ### 4.1. Kubernetes Architecture
-A un nivel muy alto, kubernetes cuenta con los siguientes componnentes principales:
+A un nivel muy alto, kubernetes cuenta con los siguientes componentes principales:
 
 ![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/4.1_KubernetesArchitecture.png)
 
-* Uno o más nodos maestros
-* Uno o más nodos trabajadores
-* Base de datos distribuidad, clave-valor, __etcd__
+* Uno o más __Master Nodes__.
+* Uno o más __Worder Nodes__.
+* Base de datos distribuida, key-value, __etcd__.
 
 
 ### 4.2. Master Node
@@ -226,49 +239,49 @@ Para comunicarse con el cluster, los usuarios envian solicitudes al __Master Nod
 
 ![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/4.2_KubernetesMasterNode.png)
 
+El plano de control mantiene un registro de todos los objectos de k8s en el sistema, y ejecuta bucles de control continuos para gestionar el estado de esos objetos.
 Es importante mantener el plano de control. Perder el plano de control puede introducir tiempos de inactividad, causando la interrumpción del servicio a los clientes. 
 Para asegurar tolerancia a fallos, se añaden réplicas del __Master Node__ al cluster, configurandolo así, en modo HA.
-Solo uno de los __Master Node__ administra activamente el cluster, el resto de componentes permanencen sincronizados con el resto de réplicas master. 
+Solo uno de los __Master Node__ administra activamente el cluster, el resto de componentes permanencen sincronizados con el resto de __Master Replicas__. 
 
 Para mantener el estado del cluster de k8s, todos los datos de la configuración del cluster se guardan en __etcd__. 
-Sin embargo, etcd es un almacenamiento __clave-valor distribuido__, que solo guarda datos relacionados con el estado del cluster. 
+Sin embargo, __etcd__ es un almacenamiento __key-value distribuido__, que solo guarda datos relacionados con el estado del cluster. 
 Está configurado en el __Master Node__ y ubicado en un host dedicado, para evitar las posibilidades de pérdidas.
 
 
 ### 4.3. Master Node Components
 Un __Master Node__ tiene los siguientes componentes:
-* API Server
-* Scheduler
-* Controller managers
-* etcd
+* __API Server__
+* __Scheduler__
+* __Controller managers__
+* __etcd__
 
 
-### 4.4. Master Node Components: API Server
-Todas las tareas administrativas, están coordinadas por __kube-apiserver__. 
-El __API Server__, intercepta las llamadas RESTfull de los usuarios, operadores y agentes externos, las valida y las procesa. 
-Durante el procesamiento, __API Server__, lee  el estado del cluster desde __etcd__, y despues de la llamada, el estado resultante del cluster de k8s se guarda en __etcd__.
-
-__API Server__, es el único componente que habla con __etcd__, tanto para leer como para escribir, actuando como una interferfaz de intermediario.
-__API Server__ es configurable, también adminte la adición de API Servers personalizados, cuando el API Server primario se convierte en un proxy de todos los servidores API.
+### 4.4. Master Node Components: API Server (kube-apiserver)
+* Todas las tareas administrativas, están coordinadas por el. 
+* Intercepta las llamadas RESTfull de los usuarios, operadores y agentes externos, las valida y las procesa. 
+* Durante el procesamiento, lee el estado del cluster desde __etcd__, y despues de la llamada, el estado resultante del cluster de k8s se guarda en __etcd__.
+* __API Server__, es el único componente que habla con __etcd__, tanto para leer como para escribir, actuando como una interferfaz de intermediario.
+* Es configurable, también admite la adición de API Servers personalizados, cuando el API Server primario se convierte en un proxy de todos los servidores API.
 
 
 ### 4.5. Master Node Components: Scheduler
 El role del __Scheduler__ es asignar nuevos objetos a los __Pods__ de los __Nodes__. 
 Durante el proceso de programación, las decisiones se toman en base al estado actual del cluster, y a los requisitos de los nuevos objetos.
 El __scheduler__, obtiene de __etcd__, a través de __API Server__, los datos de uso de recursos de cada nodo del cluster.
-El __Scheduler__ también recibe de __API Server__, los requisitos del nuevo objeto. 
+También recibe de __API Server__, los requisitos del nuevo objeto. 
 Los requisitos pueden incluir las restricciones que establecen los usuarios y los operadores. 
-El __Scheduler__ también tiene en cuenta los requisitos de calidad (QoS), la localización de los datos, la afinidad, la antiafinidad, tolerancia, etc
+El __Scheduler__ también tiene en cuenta los requisitos de calidad (QoS), la localización de los datos, la afinidad, la antiafinidad, tolerancia, etc.
 
-Es altamente configurable, si se añaden más __Schedulers__, es necesario incluir el nonmbre del __Scheduler__, sino lo gestionará el de por defecto.
+Es altamente configurable, si se añaden más __Schedulers__, es necesario indicar en el objeto el nombre del __Scheduler__, sino lo gestionará el de por defecto.
 
-Es bastante importante y complejo este componente.
+> Es bastante importante y complejo este componente.
 
 
 ### 4.6. Master Node Components: Controller Managers
-Son componentes del plano de control, en el __Master Node__ que regulan el estado del cluster. 
+Son componentes del plano de control en el __Master Node__ que regulan el estado del cluster. 
 Son bucles de vigilancia que se ejecutan continuamente y comparan el estado deseado del cluster (proporcionado por los nuevos objectos) con el estado actual (proporcionado de etcd a traves de __API Server)__.
-En caso de desajuste, se toman medidas correctivas para coincidir con el estado deseado.
+En caso de desajuste, se toman medidas correctivas para hacer coincidir con el estado deseado.
 
 Los __Controller Managers__, son los encargados de actuar cuando los __Nodes__ no están disponibles, garantizar que el número de __Pods__ son el esperado, de crear __Endpoints__, __Service Accounts__, y __API access tokens__.
 Es el encargado de interactuar con la infraestructura subyacente de un proveedor de nubes cuando los __Nodes__ no están disponibles, de gestionar volumenes de almacenamiento, equilibrar el balancedo de carga y el enrutamiento.
@@ -279,10 +292,11 @@ Es un __almacenamiento de datos clave-valor distribuido__ que se utiliza para pe
 Los nuevos datos se escriben en el almacen solo añadiendolos, los datos nunca son reemplazados. 
 Los datos obsoletos se compactan periódicamente para minimizar el tamaño de __etcd__.
 
-__Solo el API Server es capaz de comunicarse con etcd.__
+> Solo el API Server es capaz de comunicarse con etcd.
 
 La herramienta de gestión (CLI) de __etcd__ proporciona capacidades de copias de seguridad, snapshots, y restauración. 
-__Para los entornos productivos, es importante replicarlos en HA.__
+
+> Para los entornos productivos, es importante replicarlos en HA.
 
 Algunas herramientas de arranque de clusters de k8s, por defecto, aprovisionan __Master Nodes__ de etcd aplilados, en los que __etcd__ se ejecuta junto a los demás componentes del __Master Node__ y comparte recursos con ellos. 
 Puede aislarse el __etcd__ en un host separado, reduciendo así posibilidades de fallo. 
@@ -290,7 +304,7 @@ Tanto las configuraciónes en el mismo host o en otro, adminten configuración e
 
 ![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/4.7_MasterandFollowers.png)
 
-__etcd está escrito en Go__. 
+> etcd está escrito en Go.
 Además de almacenar el estado del cluster, también se almacenan detalles de configuración como subredes, ConfigMaps, secrets, etc.
 
 
@@ -298,7 +312,7 @@ Además de almacenar el estado del cluster, también se almacenan detalles de co
 Un __Worder Node__, proporciona un entorno de ejecución para las aplicaciones clientes. 
 Aunque son microservicios en contenedores, estas aplicaciones están encapsuladas en __Pods__, controladas por componentes del __Master Node__.
 Los __Pods__ se programan en los __Worker Node__, donde se encuentran los recursos de computación, memoria, almacenamiento y la red para hablar entre ellos y el mundo exterior.
-__Un Pod, es la unidad mínima de k8s.__ Es una colección lógica de uno o más contenedores juntos.
+> Un Pod, es la unidad mínima de k8s.  Es una colección lógica de uno o más contenedores juntos.
 
 ![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/4.8_KubernetesWorkerNode.png)
 
@@ -330,7 +344,7 @@ Recibe las definiciones del __Pod__, principalmente del __API Server__, e intera
 También supervisa la salud de los contenedores en ejecución del __Pod__.
 
 __kubelet__ se conecta al __runtime__ del contenedor mediante la Interfaz de Tiempo de Ejecución del Contenedor __(CRI)__. 
-CRI consiste en buffers de protocolo, gRPC API, y librerías.
+> CRI consiste en buffers de protocolo, gRPC API, y librerías.
 
 ![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/4.11_ContainerRuntimeInterface.png)
 
@@ -340,12 +354,12 @@ __CRI__ implementa dos servicios: __ImageService__ y __RuntimeService__:
 * __ImageService__ es responsable de todas las operaciones relacionadas con la imagen.
 * __RuntimeService__ es responsable de todas las operaciones relacionadas con el __Pod__ y el contenedor.
 
-Los __runtime__ de los contenedores solían estar codificados en duro en Kubernetes, pero con el desarrollo de CRI, Kubernetes es más flexible ahora y utiliza diferentes __runtimes__ de los contenedores sin necesidad de recompilar. 
+> Los __runtime__ de los contenedores solían estar codificados en duro en Kubernetes, pero con el desarrollo de CRI, Kubernetes es más flexible ahora y utiliza diferentes __runtimes__ de los contenedores sin necesidad de recompilar. 
 Cualquier __runtime__ de contenedor que implemente la CRI puede ser usado por Kubernetes para gestionar __Pods__, contenedores e imágenes de contenedores.
 
 
 ### 4.12. Worker Node Components: kubelet - CRI shims
-Ejemplos de IRC:
+Ejemplos de CRI:
 
 * __dockershim:__ los contenedores se crean usando Docker instalado en los nodos de los trabajadores. Internamente, Docker utiliza __containerd__ para crear y gestionar los contenedores.
 
@@ -999,7 +1013,7 @@ Módulos de software que pueden modificar o rechazar las solicitudes en base a a
 
 La siguiente imagen muestra las etapas anteriores:
 
-![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/9.1_AccesingAPI.png)
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/9.1_AccesingApi.png)
 
 ## 9.2. Authentication I
 Kubernetes no tiene un objeto llamado usuario, ni almacena nombres de usuario u otros detalles relacionados en su almacén de objetos. Sin embargo, incluso sin eso, los Kubernetes pueden utilizar los nombres de usuario para el control de acceso y el registro de solicitudes, que exploraremos en este capítulo.
@@ -1441,16 +1455,144 @@ nginx-77595c695-f2xmd   1/1     Running   0          7m41s
 
 ## Chapter 10. Services<a name="chapter10"></a>
 ## 10. Services
+Aunque la arquitectura impulsada por los microservicios tiene por objeto desacoplar los componentes de una aplicación, los microservicios siguen necesitando agentes para vincularlos o agruparlos lógicamente y balancear la carga a los que forman parte de ese conjunto lógico.
+
+En este capítulo, aprenderemos sobre los __Services__, utilizados para agrupar __Pods__ para proporcionar puntos de acceso comunes del mundo exterior a las aplicaciones en contenedores. Aprenderemos sobre el demonio __kube-proxy__, que se ejecuta en cada __Worker Node__ para proporcionar acceso a los servicios. También hablaremos del descubrimiento de servicios y de los tipos de servicios, que deciden el alcance del acceso a un servicio.
+
+
 ## 10.1. Connecting Users to Pods
+Para acceder a la aplicación, un usuario/cliente debe conectarse a los __Pods__. Como los __Pods__ son de naturaleza efímera, los recursos como las direcciones IP que se le asignan no pueden ser estáticos. Los __Pods__ pueden ser terminados abruptamente o reprogramados en base a los requerimientos existentes.
+
+Tomemos, por ejemplo, un escenario en el que un usuario/cliente se conecta a un __Pod__ utilizando su dirección IP.
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/10.1_AccessPod_A.png)
+
+Inesperadamente, el Pod al que está conectado el usuario/cliente se termina, y un nuevo __Pod__ es creado por el controlador. El nuevo __Pod__ tendrá una nueva dirección IP, que no será conocida automáticamente por el usuario/cliente del __Pod__ anterior.
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/10.1_AccessPod_B.png)
+
+Para superar esta situación, Kubernetes proporciona una abstracción de nivel superior llamada __Services__, que agrupa lógicamente los __Pods__ y define una política para acceder a ellos. Esta agrupación se realiza a través de __Labels__ y __Selectors__.
+
+
 ## 10.2. Services
+En la siguiente representación gráfica, __app__ es la __Label key__, __frontend__ y __db__ son los __Label values__ para las diferentes vainas.
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/10.2_Services_A.png)
+
+Usando los selectores __app==frontend__ y __app==db__, agrupamos los __Pods__ en dos conjuntos lógicos: uno con 3 Pods, y otro con un solo Pod.
+
+Asignamos un nombre a la agrupación lógica, llamada __Service__. En nuestro ejemplo, creamos dos Servicios, __frontend-svc__, y __db-svc__, y tienen los Selectors __app==frontend__ y __app==db__, respectivamente.
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/10.2_Services_B.png)
+
+Los servicios pueden exponer __Pods__ individuales, __ReplicaSets__, __Deployments__, __DaemonSets__ y __StatefulSets__.
+
+
 ## 10.3. Service Object Example
+Un servicio se define como en el siguiente fichero:
+
+```yaml
+kind: Service
+apiVersion: v1
+metadata:
+  name: frontend-svc
+spec:
+  selector:
+    app: frontend
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 5000
+```
+
+En este ejemplo, estamos creando un __Service__ de __frontend-svc__ seleccionando todos los __Pods__ que tienen el Label _key=app_ establecida en __value=frontend__. Por defecto, cada __Service__ recibe una dirección IP enrutada sólo dentro del clúster, conocida como __ClusterIP__. En nuestro ejemplo, tenemos 172.17.0.4 y 172.17.0.5 como ClusterIPs asignados a nuestros Servicios __frontend-svc__ y __db-svc__, respectivamente. 
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/10.3_AccessingThePodsUsingServiceObject.png)
+
+El usuario/cliente se conecta ahora a un servicio a través de su __ClusterIP__, que reenvía el tráfico a uno de los Pods adjuntos a él. Un __Service__ provee balanceo de carga por defecto mientras selecciona los __Pods__ para el reenvío de tráfico.
+
+Mientras que el __Service__ reenvía el tráfico a los __Pods__, podemos seleccionar el __targetPort__ en el __Pod__ que recibe el tráfico. En nuestro ejemplo, el __Service__ de __frontend-svc__ recibe las solicitudes del usuario/cliente en el puerto 80 y luego reenvía estas solicitudes a uno de los __Pods__ adjuntos en el __targetPort__ 5000. Si el __targetPort__ no está definido explícitamente, entonces el tráfico será reenviado a los __Pods__ en el puerto en el que el __Service__ recibe el tráfico.
+
+Un conjunto lógico de la dirección IP de un Pod, junto con el __targetPort__ se denomina __Service endpoint__. En nuestro ejemplo, el __frontend-svc Service__  tiene 3 endpoints: 10.0.1.3:5000, 10.0.1.4:5000, y 10.0.1.5:5000. Los __endpoints__ son creados y gestionados automáticamente por el __Service__, no por el administrador del clúster de Kubernetes. 
+
+
 ## 10.4. kube-proxy
+Todos los __Worker Node__ ejecutan un demonio llamado __kube-proxy__, que vigila el __API Server__ en el __Master Node__ para la adición y eliminación de __Services__ y __endpoints__. En el ejemplo siguiente, para cada nuevo __Service__, en cada __Node__, el __kube-proxy__ configura las reglas de iptables para capturar el tráfico para su __ClusterIP__ y lo reenvía a uno de los __Service's endpoints__. Por lo tanto, cualquier Node puede recibir el tráfico externo y luego enrutarlo internamente en el cluster en base a las reglas iptables. Cuando se elimina el __Service__, el __kube-proxy__ elimina las correspondientes reglas iptables en todos los Nodes también.
+
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/10.4_kube-proxyServicesEndpoints.png)
+
+
 ## 10.5. Service Discovery
+Como los __Services__ son el principal modo de comunicación en K8s, necesitamos una forma de descubrirlos en tiempo de ejecución. Kubernetes admite dos métodos para descubrir los __Services__:
+
+* __Environment Variables:__
+Tan pronto como el __Pod__ se inicia en cualquier Worker Node, el demonio __kubelet__ que se ejecuta en ese Node añade un conjunto de variables de entorno en el __Pod__ para todos los __Services__ activos. Por ejemplo, si tenemos un __Service__ activo llamado redis-master, que expone el puerto 6379, y su ClusterIP es 172.17.0.6, entonces, en un __Pod__ recién creado, podemos ver las siguientes variables de entorno:
+
+```
+REDIS_MASTER_SERVICE_HOST=172.17.0.6
+REDIS_MASTER_SERVICE_PORT=6379
+REDIS_MASTER_PORT=tcp://172.17.0.6:6379
+REDIS_MASTER_PORT_6379_TCP=tcp://172.17.0.6:6379
+REDIS_MASTER_PORT_6379_TCP_PROTO=tcp
+REDIS_MASTER_PORT_6379_TCP_PORT=6379
+REDIS_MASTER_PORT_6379_TCP_ADDR=172.17.0.6
+```
+
+Con esta solución, tenemos que ser cuidadosos al pedir nuestros __Services__, ya que los __Pods__ no tendrán las variables de entorno establecidas para los __Services__ que se crean después de que se creen los __Pods__.
+
+* __DNS__
+Kubernetes tiene un complemento para el DNS, que crea un registro DNS para cada __Service__ y su formato es __my-svc.mi-nombreespacio.svc.cluster.local__. Los __Services__ dentro del mismo __Namespace__ encuentran otros servicios sólo por su nombre. Si añadimos un __Service__ redis-master en mi __Namespace__, todos los __Pods__ en el mismo __Namespace__ buscan el __Service__ sólo por su nombre, redis-master. Los __pods__ de otros __Namespaces__ buscan el mismo __Service__ añadiendo el respectivo __Nampespace__ como sufijo, como redis-master.my-ns. 
+
+Esta es la solución más común y altamente recomendada. Por ejemplo, en la imagen de la sección anterior, hemos visto que se configura un DNS interno, que mapea nuestros __Services__ frontend-svc y db-svc a 172.17.0.4 y 172.17.0.5, respectivamente. 
+
+
 ## 10.6. ServiceType
+Al definir un __Service__, también podemos elegir su ámbito de acceso. Podemos decidir si el __Service__:
+
+* Es sólo accesible dentro del cluster.
+* Es accesible desde el interior del cluster y el mundo exterior.
+* Se traza un mapa de una entidad que reside dentro o fuera del cluster.
+
+El alcance del acceso se decide por el _ServiceType_, que puede ser configurado al crear el __Service__.
+
+
 ## 10.7. ServiceType: ClusterIP and NodePort
+__ClusterIP__ es el _ServiceType_ por defecto. Un __Service__ recibe una dirección IP virtual, conocida como su __ClusterIP__. Esta dirección IP virtual se utiliza para comunicarse con el __Service__ y sólo se puede acceder a ella dentro del clúster. 
+
+Con el __NodePort ServiceType__, además de un __ClusterIP__, un puerto alto, elegido dinámicamente del rango predeterminado 30000-32767, se asigna al __Service__ respectivo, de todos los __Worker Node__. Por ejemplo, si el __NodePort__ mapeado es 32233 para el frontend-svc, entonces, si nos conectamos a cualquier Worker Node en el puerto 32233, el Node redirigirá todo el tráfico al __ClusterIP__ asignado - 172.17.0.4. Si preferimos un número de puerto alto específico en su lugar, entonces podemos asignar ese número de puerto alto al __NodePort__ del rango por defecto. 
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/10.7_NodePort.png)
+
+El __NodePort__ _ServiceType_ es útil cuando queremos que nuestros servicios sean accesibles desde el mundo exterior. El usuario final se conecta a cualquier Worker Node  en el puerto alto especificado, que envía la solicitud internamente al __ClusterIP__ del __Service__, y luego la solicitud se envía a las aplicaciones que se ejecutan dentro del clúster. Para acceder a varias aplicaciones del mundo externo, los administradores pueden configurar un proxy inverso, es decir, un __Ingress__, y definir reglas que apunten a los __Services__ dentro del clúster.
+
+
 ## 10.8. ServiceType: LoadBalancer
+Con el __LoadBalancer__ _ServiceType_:
+
+* __NodePort__ y __ClusterIP__ se crean automáticamente, y el balanceador de carga externo se dirigirá a ellos.
+* El __Service__ está expuesto en un puerto estático en cada Worker Node.
+* El __Service__ se expone externamente utilizando la función de balanceo de carga del proveedor de nubes subyacente.
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/10.8_LoadBalancer.png)
+
+El __LoadBalancer__ _ServiceType_ sólo funcionará si la infraestructura subyacente soporta la creación automática de __Load Balancers__ y tiene el respectivo soporte en los Kubernetes, como es el caso de la plataforma de Google Cloud y AWS. Si no se configura tal característica, el campo de dirección IP del __LoadBalancer__ no se rellena, y el __Service__ funcionará de la misma manera que un __Service__ de tipo __NodePort__.
+
+
 ## 10.9. ServiceType: ExternalIP
+Un __Service__ puede ser mapeado a una __ExternalIP__ si puede enrutar a uno o más de los Worker Nodes. El tráfico que entra en el cluster con el __ExternalIP__ (como IP de destino) en el puerto de __Service__, se enruta a uno de los __Service endpoints__. Este tipo de servicio requiere un proveedor de nube externo como Google Cloud Platform o AWS.
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/10.9_ExternalIP.png)
+
+Tenga en cuenta que las __ExternalIP__ no son gestionadas por Kubernetes. El administrador del clúster tiene que configurar el enrutamiento que asigna la dirección de__ ExternalIP__ a uno de los Nodes.
+
+
 ## 10.10. ServiceType: ExternalName
+__ExternalName__ es un _ServiceType_ especial, que no tiene __Selectors__ y no define ningún endpoint. Cuando se accede dentro del cluster, devuelve un registro __CNAME__ de un __Service__ configurado externamente.
+
+El principal caso de uso de este _ServiceType_ es hacer que los __Services__ configurados externamente como my-database.example.com estén disponibles para las aplicaciones dentro del clúster. Si el __Service__ definido externamente reside dentro del mismo espacio de nombres, el uso del nombre my-database lo haría disponible para otras aplicaciones y servicios dentro de ese mismo __Namespace__.
+
+
 
 ## Chapter 11. Deploying a Stand-Alone Application<a name="chapter11"></a>
 ## 11. Deploying a Stand-Alone Application
