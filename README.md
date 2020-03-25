@@ -1596,23 +1596,426 @@ El principal caso de uso de este _ServiceType_ es hacer que los __Services__ con
 
 ## Chapter 11. Deploying a Stand-Alone Application<a name="chapter11"></a>
 ## 11. Deploying a Stand-Alone Application
+En este capítulo, aprenderemos a desplegar una aplicación utilizando el Dashboard (Kubernetes WebUI) y la Command Line Interface (CLI). También expondremos la aplicación con un Servicio de tipo __NodePort__, y accederemos a ella desde el mundo exterior.
+
+
 ## 11.1. Deploying an Application Using the Dashboard I
+En las siguientes secciones, aprenderemos cómo desplegar un servidor web nginx usando la imagen __nginx:alpine__.
+
+Inicie Minikube y verifique que está funcionando
+Ejecute este comando primero:
+
+```
+$ minikube start
+```
+
+Deje pasar varios minutos para que comience el Minikube, luego verifique el estado del Minikube:
+
+```
+$ minikube status
+host: Running
+kubelet: Running
+apiserver: Running
+kubectl: Correctly Configured: pointing to minikube-vm at 192.168.99.100
+```
+
+Para acceder a la Web IU de Kubernetes, necesitamos ejecutar el siguiente comando:
+
+```
+$ minikube dashboard
+```
+
+Al ejecutar este comando se abrirá un navegador con la interfaz web de Kubernetes, que podemos utilizar para gestionar aplicaciones en contenedores. Por defecto, el __Dashboard__ está conectado __Namespace Default__.
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/11.1_AccessingDashboard.png)
+
+> NOTA: Si el navegador no abre una pestaña nueva con el Dashboard, revise la salida del terminal, mostará algo similar a esto:
+
+```
+http://127.0.0.1:37751/api/v1/namespaces/kube-system/services/http:kubernetes-dashboard:/proxy/
+```
+
+
 ## 11.2. Deploying an Application Using the Dashboard II
+__Despliegue un servidor web usando la imagen nginx:alpine__
+Desde el tablero de mandos, haga clic en la pestaña +CREATE en la esquina superior derecha del tablero de mandos. Eso abrirá la interfaz de creación como se ve abajo:
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/11.2_DashboardCreate.png)
+
+A partir de eso, podemos crear una aplicación usando una configuración de datos de archivo _YAML/JSON_ válida, o manualmente desde la sección _CREAR UNA APP_. Haga clic en la pestaña _CREAR UNA APP_ y proporcione los siguientes detalles de la aplicación:
+
+* El nombre de la aplicación es __webserver__.
+* La imagen del Docker a usar es __nginx:alpine__, donde __alpine__ es la etiqueta de la imagen.
+* La cuenta de la réplica, o el número de vainas, es 3.
+* No hay __Service__, como lo crearemos más tarde.
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/11.2_DashboardDeploy.png)
+
+Si hacemos clic en Mostrar Opciones Avanzadas, podemos especificar opciones como _Labels_, _Namespaces_, _Environment Variables_, etc. Por defecto, la etiqueta de la aplicación está configurada con el nombre de la aplicación. En nuestro ejemplo k8s-app:webserver Label está establecida para todos los objetos creados por este Deployment: Pods y Servicios (cuando se exponen).
+
+Al hacer clic en el botón de __Deployment__, activamos el despliegue. Como se esperaba, el servidor web de despliegue creará un __ReplicaSet__ (servidor web-74d8bd488f), que eventualmente creará tres Pods (servidor web-74d8bd488f-xxxxx).
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/11.2_DashboardDetail.png)
+
+> NOTA: Agregue la URL completa en el campo Imagen del Contenedor docker.io/library/nginx:alpine si se encuentra algún problema con el simple nombre de la imagen nginx:alpine (o utilice la URL k8s.gcr.io/nginx:alpine si funciona en su lugar).
+
+
 ## 11.3. Deploying an Application Using the Dashboard III
+Una vez creado el Despliegue del servidor web, podemos utilizar el panel de navegación de recursos del lado izquierdo del Tablero para mostrar los detalles de los __Deployment__, __ReplicaSet__ y __Pods__ en el Namespace. Los recursos mostrados por el Dashboard coinciden con los recursos individuales mostrados desde el CLI a través de kubectl.
+
+* Listar los Despliegues
+
+```
+$ kubectl get deployments
+NAME        READY   UP-TO-DATE   AVAILABLE   AGE
+webserver   3/3     3            3           9m
+```
+
+* List the ReplicaSets
+
+```
+$ kubectl get replicasets
+NAME                   DESIRED   CURRENT   READY   AGE
+webserver-74d8bd488f   3         3         3       9m
+```
+
+* List the Pods
+
+```
+$ kubectl get pods
+NAME                          READY   STATUS    RESTARTS   AGE
+webserver-74d8bd488f-dwbzz    1/1     Running   0          9m
+webserver-74d8bd488f-npkzv    1/1     Running   0          9m
+webserver-74d8bd488f-wvmpq    1/1     Running   0          9m 
+```
+
+
 ## 11.4. Exploring Labels and Selectors I
+Anteriormente, hemos visto que las __Labels__ y los __Selectors__ juegan un papel importante en la agrupación de un subconjunto de objetos sobre los que podemos realizar operaciones. A continuación, vamos a examinarlos más de cerca.
+
+* Mirar los detalles de un pod
+Podemos ver los detalles de un objeto usando el comando __kubectl describe__. En el siguiente ejemplo, puedes ver la descripción de un Pod:
+
+```yaml
+$ kubectl describe pod webserver-74d8bd488f-dwbzz
+Name:           webserver-74d8bd488f-dwbzz
+Namespace:      default
+Priority:       0
+Node:           minikube/10.0.2.15
+Start Time:     Wed, 15 May 2019 13:17:33 -0500
+Labels:         k8s-app=webserver
+                pod-template-hash=74d8bd488f
+Annotations:    <none>
+Status:         Running
+IP:             172.17.0.5
+Controlled By:  ReplicaSet/webserver-74d8bd488f
+Containers:
+  webserver:
+    Container ID:   docker://96302d70903fe3b45d5ff3745a706d67d77411c5378f1f293a4bd721896d6420
+    Image:          nginx:alpine
+    Image ID:       docker-pullable://nginx@sha256:8d5341da24ccbdd195a82f2b57968ef5f95bc27b3c3691ace0c7d0acf5612edd
+    Port:           <none>
+    State:          Running
+      Started:      Wed, 15 May 2019 13:17:33 -0500
+    Ready:          True
+    Restart Count:  0
+...
+```
+
+El comando de __kubectl describe__ muestra muchos más detalles de un __Pod__. Por ahora, sin embargo, nos centraremos en el campo __Labels__, donde tenemos una __Label__ configurada como __k8s-app=webserver__.
+
+
 ## 11.5. Exploring Labels and Selectors II
+* Lista los __Pods__ junto con sus __Labels__.
+Con la opción __-L__ del comando __kubectl get pods__, añadimos columnas extra en la salida para listar los __pods__ con __Label keys__ y __Label Values__. En el siguiente ejemplo, estamos listando __Pods__ con las claves __Label k8s-app__ y __label2__:
+
+```
+$ kubectl get pods -L k8s-app,label2
+NAME                         READY   STATUS    RESTARTS   AGE   K8S-APP     LABEL2
+webserver-74d8bd488f-dwbzz   1/1     Running   0          14m   webserver   
+webserver-74d8bd488f-npkzv   1/1     Running   0          14m   webserver   
+webserver-74d8bd488f-wvmpq   1/1     Running   0          14m   webserver   
+```
+
+Todos los __Pods__ están listados, ya que cada Pod tiene la Label key __k8s-app__ con el value __webserver__. Podemos ver eso en la columna __K8S-APP__. Como ninguno de los Pods tiene la Label key label2, no se listan valores en la columna LABEL2.
+
+
 ## 11.6. Exploring Labels and Selectors III
+* __Selecciona las vainas con una etiqueta determinada__
+Para usar un selector con el comando __kubectl get pods__, podemos usar la opción __-l__. En el siguiente ejemplo, estamos seleccionando todos los __Pods__ que tienen la key __k8s-app__ establecida como value __webserver__:
+
+```
+$ kubectl get pods -l k8s-app=webserver
+NAME                         READY     STATUS    RESTARTS   AGE
+webserver-74d8bd488f-dwbzz   1/1       Running   0          17m
+webserver-74d8bd488f-npkzv   1/1       Running   0          17m
+webserver-74d8bd488f-wvmpq   1/1       Running   0          17m
+```
+
+En el ejemplo anterior, enumeramos todos los __Pods__ que creamos, ya que todos ellos tienen la clave Label k8s-app establecida como value __webserver__.
+
+Intenta usar __k8s-app=webserver1__ como el __Selector__:
+
+```
+$ kubectl get pods -l k8s-app=webserver1
+No resources found.
+```
+
+
 ## 11.7. Deploying an Application Using the CLI I
+Para desplegar una aplicación usando el CLI, primero borremos el __Deployment__ que creamos anteriormente.
+
+__Borrar el Deployment que creamos anteriormente__
+Podemos eliminar cualquier objeto usando __kubectl delete__ _command_. A continuación, estamos eliminando el despliegue del __webserver__ que creamos anteriormente con el Dashboard:
+
+```
+$ kubectl delete deployments webserver
+deployment.extensions "webserver" deleted
+```
+
+Eliminado el __Deployment__, también eliminamos el __Replicaset__ y el __Pod__ asociado:
+
+```
+$ kubectl get replicasets
+No resources found.
+
+$ kubectl get pods
+No resources found.
+```
 ## 11.8. Deploying an Application Using the CLI II
+Crear un archivo de configuración YAML con los detalles del despliegue
+Vamos a crear el archivo __webserver.yaml__ con el siguiente contenido:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webserver
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+```
+
+Usando __kubectl__, crearemos el despliegue desde el archivo de configuración de YAML. Usando la opción __-f__ con el comando __kubectl create__, podemos pasar un archivo YAML como especificación de un objeto, o una URL a un archivo de configuración de la web. En el siguiente ejemplo, estamos creando un __Deployment__ del webserver:
+
+```
+$ kubectl create -f webserver.yaml
+deployment.apps/webserver created
+```
+
+Esto también creará un __ReplicaSet__ y __Pods__, como se define en el archivo de configuración de YAML.
+
+```
+$  kubectl get replicasets
+NAME                  DESIRED   CURRENT   READY     AGE
+webserver-b477df957   3         3         3         45s
+
+$ kubectl get pods
+NAME                        READY     STATUS    RESTARTS   AGE
+webserver-b477df957-7lnw6   1/1       Running   0          2m
+webserver-b477df957-j69q2   1/1       Running   0          2m
+webserver-b477df957-xvdkf   1/1       Running   0          2m
+```
+
 ## 11.9. Exposing an Application I
+En un capítulo anterior, exploramos diferentes _ServiceTypes_. Con los _ServiceTypes_ podemos definir el método de acceso para un Servicio. Para un NodePort ServiceType, Kubernetes abre un puerto estático en todos los nodos trabajadores. Si nos conectamos a ese puerto desde cualquier nodo, se nos envía al ClusterIP del Servicio. A continuación, usemos el NodePort ServiceType mientras creamos un Servicio.
+
+__Creamos un archivo webserver-svc.yaml con el siguiente contenido:__
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+  labels:
+    run: web-service
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    protocol: TCP
+  selector:
+    app: nginx 
+```
+
+__Using kubectl, create the Service:__
+
+```
+$ kubectl create -f webserver-svc.yaml
+service/web-service created
+```
+
+Un método más directo de crear un Servicio es exponiendo el __Deployment__ creado previamente (este método requiere un __Deployment__ existente).
+
+__Expose a Deployment with the kubectl expose command:__
+
+```
+$ kubectl expose deployment webserver --name=web-service --type=NodePort
+service/web-service exposed
+```
+
 ## 11.10. Exposing an Application II
+Listar los __Services:__
+
+```
+$ kubectl get services
+NAME          TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+kubernetes    ClusterIP   10.96.0.1      <none>        443/TCP        1d
+web-service   NodePort    10.110.47.84   <none>        80:31074/TCP   22s
+```
+
+Nuestro web-service está ahora creado y su __ClusterIP__ es 10.110.47.84. En la sección __PORT(S)__, vemos un mapeo de __80:31074__, lo que significa que hemos reservado un puerto estático 31074 en el nodo. Si nos conectamos al nodo en ese puerto, nuestras peticiones serán enviadas al __ClusterIP__ del puerto __80__.
+
+No es necesario crear el despliegue primero, y el servicio después. Pueden ser creados en cualquier orden. Un Servicio encontrará y conectará los Pods basados en el Selector.
+
+Para obtener más detalles sobre el Servicio, podemos usar el comando __kubectl describe__, como en el siguiente ejemplo:
+
+```yaml
+$ kubectl describe service web-service
+Name:                     web-service
+Namespace:                default
+Labels:                   run=web-service
+Annotations:              <none>
+Selector:                 app=nginx
+Type:                     NodePort
+IP:                       10.110.47.84
+Port:                     <unset>  80/TCP
+TargetPort:               80/TCP
+NodePort:                 <unset>  31074/TCP
+Endpoints:                172.17.0.4:80,172.17.0.5:80,172.17.0.6:80
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:                   <none>
+```
+
+__web-service__ utiliza __app=nginx__ como un __Selector__ para agrupar lógicamente nuestros tres __Pods__, que están listados como puntos finales. Cuando una solicitud llega a nuestro __Service__, será atendida por uno de los __Pods__ listados en la sección de __endpoints__.
+
+
 ## 11.11. Accessing an Application
+Nuestra aplicación se está ejecutando en el nodo VM de Minikube. Para acceder a la aplicación desde nuestra estación de trabajo, primero obtengamos la dirección IP de la VM de Minikube:
+
+```
+$ minikube ip
+192.168.99.100
+```
+
+Ahora, abra el navegador y acceda a la aplicación en el 192.168.99.100 en el puerto 31074.
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/11.11_Browser.png)
+
+También podríamos ejecutar el siguiente comando de minicubo que muestra la aplicación en nuestro navegador:
+
+```
+$ minikube service web-service
+Opening kubernetes service default/web-service in default browser...
+```
+
+Podemos ver la página de bienvenida de Nginx, mostrada por la aplicación del servidor web que se ejecuta dentro de los __Pods__ creados. Nuestras peticiones podrían ser atendidas por cualquiera de los tres puntos finales agrupados lógicamente por el __Service__, ya que el __Service__ actúa como un __Load Balancer__ delante de sus __endpoints__.
+
+
 ## 11.12. Liveness and Readiness Probes
+Aunque las aplicaciones en contenedores están programadas para ejecutarse en __Pods__ en los Nodes de nuestro cluster, a veces las aplicaciones pueden no responder o pueden retrasarse durante el inicio. La implementación __Liveness__ y __Readiness Probes__ permite que __kubelet__ controle la salud de la aplicación que se ejecuta en el interior de un contenedor del __Pod__ y forzar el reinicio de una aplicación que no responde. Cuando se definen tanto __Readiness__ y __Liveness Probes__, se recomienda dejar el tiempo suficiente para que __Readiness Live__ pueda fallar unas cuantas veces antes de un pase, y sólo entonces comprobar __Liveness Probe__. Si __Readiness__ y __Liveness Probes__ se solapan, puede existir el riesgo de que el contenedor nunca alcance el estado de listo. 
+
+
 ## 11.13. Liveness
+Si un contenedor de un __Pod__ se está ejecutando, pero la aplicación que se está ejecutando dentro de este contenedor no responde a nuestras peticiones, entonces ese contenedor no nos sirve. Este tipo de situación puede ocurrir, por ejemplo, debido a un bloqueo de la aplicación o a la presión de la memoria. En tal caso, se recomienda reiniciar el contenedor para que la aplicación esté disponible.
+
+En lugar de reiniciarlo manualmente, podemos usar __Liveness Probe__. __Liveness Probe__ comprueba la salud de una aplicación, y si el control de salud falla, __kubelet__ reinicia el contenedor afectado automáticamente.
+
+__Liveness Probe__ se pueden establecer definiendo:
+
+* Liveness command.
+* Liveness HTTP request.
+* TCP Liveness Probe.
+
+
 ## 11.14. Liveness Command
+En el siguiente ejemplo, estamos comprobando la existencia de un archivo /tmp/healthy:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    test: liveness
+  name: liveness-exec
+spec:
+  containers:
+  - name: liveness
+    image: k8s.gcr.io/busybox
+    args:
+    - /bin/sh
+    - -c
+    - touch /tmp/healthy; sleep 30; rm -rf /tmp/healthy; sleep 600
+    livenessProbe:
+      exec:
+        command:
+        - cat
+        - /tmp/healthy
+      initialDelaySeconds: 5
+      periodSeconds: 5
+```
+
+La existencia del archivo /tmp/healthy está configurado para ser comprobado cada 5 segundos usando el parámetro __periodSeconds__. El parámetro __initialDelaySeconds__ pide al __kubelet__ que espere 5 segundos antes de la primera sonda. Al ejecutar el argumento de la línea de comandos al contenedor, primero crearemos el archivo /tmp/healthy, y luego lo eliminaremos después de 30 segundos. El borrado del archivo provocaría un fallo de salud, y nuestro __Pod__ se reiniciaría.
+
+
+
 ## 11.15. Liveness HTTP Request
+En el siguiente ejemplo, el __kubelet__ envía la petición _HTTP GET_ al punto final _/healthz_ de la aplicación, en el puerto 8080. Si eso devuelve un fallo, entonces la __kubelet__ reiniciará el contenedor afectado; de lo contrario, consideraría que la aplicación está viva.
+
+```yaml
+livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+        httpHeaders:
+        - name: X-Custom-Header
+          value: Awesome
+      initialDelaySeconds: 3
+      periodSeconds: 3
+```
+
 ## 11.16. TCP Liveness Probe
+Con el __TCP Liveness Probe__, el __kubelet__ intenta abrir el TCP Socket al contenedor que está ejecutando la aplicación. Si tiene éxito, la aplicación se considera saludable, de lo contrario el __kubelet__ lo marcaría como no saludable y reiniciaría el contenedor afectado.
+
+```yaml
+livenessProbe:
+      tcpSocket:
+        port: 8080
+      initialDelaySeconds: 15
+      periodSeconds: 20
+```
+
 ## 11.17. Readiness Probes
+A veces, las aplicaciones tienen que cumplir ciertas condiciones antes de poder servir al tráfico. Estas condiciones incluyen asegurarse de que el servicio que depende está listo, o reconocer que es necesario cargar un gran conjunto de datos, etc. En tales casos, utilizamos __Readiness Probes__ y esperamos a que se produzca una determinada condición. Sólo entonces, la aplicación puede servir al tráfico.
+
+Un __Pod__ con contenedores que no informan del estado de preparación no recibirá tráfico de los __Services__.
+
+```yaml
+readinessProbe:
+  exec:
+    command:
+    - cat
+    - /tmp/healthy
+  initialDelaySeconds: 5
+  periodSeconds: 5
+
+```
+
 
 
 ## Chapter 12. Kubernetes Volume Management<a name="chapter12"></a>
