@@ -2020,55 +2020,732 @@ readinessProbe:
 
 ## Chapter 12. Kubernetes Volume Management<a name="chapter12"></a>
 ## 12. Kubernetes Volume Management
+En el modelo de negocios actual, los datos son el activo más valioso para muchas empresas y emprendimientos. En un clúster de Kubernetes, los contenedores en __Pods__ pueden ser productores o consumidores de datos. Mientras que se espera que algunos datos de los contenedores sean transitorios y no se espera que sobrevivan a un __Pod__, otras formas de datos deben sobrevivir al __Pod__ para poder ser agregados y posiblemente cargados en los motores de análisis. Kubernetes debe proporcionar recursos de almacenamiento para proporcionar datos que serán consumidos por los contenedores o para almacenar los datos producidos por los contenedores. Kubenetes utilizan __Volumes__ de varios tipos y algunas otras formas de recursos de almacenamiento para la gestión de los datos de los contenedores. En este capítulo, hablaremos de los objetos __PersistentVolume__ y __PersistentVolumeClaim__, que nos ayudan a adjuntar volúmenes de almacenamiento persistente a los contenedores. 
+
+
 ## 12.1. Volumes
+Como sabemos, los contenedores que corren en los __Pods__ son efímeros por naturaleza. Todos los datos almacenados dentro de un contenedor se borran si el contenedor se corrompe. El __kubelet__ lo reiniciará, lo que significa que no tendrá ninguno de los datos antiguos.
+
+Para superar este problema, Kubernetes utiliza __Volumes__. Un Volumen es esencialmente un directorio respaldado por un medio de almacenamiento. El medio de almacenamiento, el contenido y el modo de acceso están determinados por el tipo de Volumen.
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/12.1_Volumes.png)
+
+En los kubernetes, un __Volume__ se adjunta a un __Pod__ y puede ser compartido entre los contenedores de ese __Pod__. El __Volume__ tiene la misma vida útil que el __Pod__, y sobrevive a los contenedores del __Pod__, lo que permite que los datos se conserven a través de los reinicios de los contenedores.
+
+
 ## 12.2. Volume Types
+Un directorio que está montado dentro de un Pod está respaldado por el Tipo de Volumen subyacente. Un Tipo de Volumen decide las propiedades del directorio, como el tamaño, el contenido, los modos de acceso por defecto, etc. Algunos ejemplos de Tipos de Volumen son:
+
+* __emptyDir__
+Se crea un volumen vacío para el __Pod__ tan pronto como se programe en el Worker Node. La vida del __Volume__ está estrechamente ligada al __Pod__. Si el __Pod__ se termina, el contenido de __emptyDir__ se borra para siempre.  
+* __hostPath__
+Con el hostPath Volume Type, podemos compartir un directorio desde el host hasta el __Pod__. Si el __Pod__ se termina, el contenido del __Volume__ sigue estando disponible en el host.
+* __gcePersistentDisk__
+Con el gcePersistentDisk Volume Type, podemos montar un disco persistente de Google Compute Engine (GCE) en un __Pod__.
+* __awsElasticBlockStore__
+Con el tipo de volumen de awsElasticBlockStore, podemos montar un volumen de AWS EBS en un __Pod__. 
+* __azureDisk__
+Con azureDisk podemos montar un Microsoft Azure Data Disk en un __Pod__.
+* __azureFile__
+Con azureFile podemos montar un volumen de Microsoft Azure File en un __Pod__.
+* __cephfs__
+Con los Cephfs, un volumen de CephFS existente puede ser montado en un __Pod__. Cuando un __Pod__ termina, el volumen se desmonta y el contenido del volumen se conserva.
+* __nfs__
+Con NFS, podemos montar una parte de NFS en un __Pod__.
+* __iscsi__
+Con ISCSI, podemos montar una acción iSCSI en una __Pod__.
+* __secreto__
+Con el tipo de volumen secreto, podemos pasar información sensible, como contraseñas, a las __Pod__. Veremos un ejemplo en un capítulo posterior.
+* __configMap__
+Con los objetos ConfigMap, podemos proporcionar datos de configuración, o comandos de shell y argumentos en un __Pod__.
+* __persistentVolumeClaim__
+Podemos adjuntar un volumen persistente a un __Pod__ usando un __persistentVolumeClaim__.
+
+
 ## 12.3. PersistentVolumes
+En un entorno típico de TI, el almacenamiento es manejado por los administradores de almacenamiento/sistemas. El usuario final sólo recibirá instrucciones para utilizar el almacenamiento, pero no participa en la gestión del almacenamiento subyacente.
+
+En el mundo contenedorizado, nos gustaría seguir reglas similares, pero se convierte en un reto, dados los muchos tipos de __Volume__ que hemos visto anteriormente. Kubernetes resuelve este problema con el subsistema __PersistentVolume (PV)__, que proporciona API para que los usuarios y administradores gestionen y consuman el almacenamiento persistente. Para gestionar el __Volume__, utiliza el tipo de recurso de la __API PersistentVolume__, y para consumirlo, utiliza el tipo de recurso de la __API PersistentVolumeClaim__.
+
+Un volumen persistente es un almacenamiento conectado a la red en el clúster, que es provisto por el administrador.
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/12.3_PersistentVolume.png)
+
+Los __PersistentVolumes__ pueden ser aprovisionados dinámicamente en base al recurso __StorageClass__. Una __StorageClass__ contiene aprovisionadores y parámetros predefinidos para crear un __PersistentVolume__. Mediante __PersistentVolumeClaims__, un usuario envía la solicitud de creación de PV dinámicos, que se cablea al recurso __StorageClass__.
+
+Algunos de los tipos de volumen que admiten la administración del almacenamiento mediante __PersistentVolumes__ son:
+* GCEPersistentDisk
+* AWSElasticBlockStore
+* AzureFile
+* AzureDisk
+* CephFS
+* NFS
+* iSCSI.
+
+
 ## 12.4. PersistentVolumeClaims
+Un __PersistentVolumeClaim (PVC)__ es una solicitud de almacenamiento por parte de un usuario. Los usuarios solicitan recursos de __PersistentVolume__ según el tipo, el modo de acceso y el tamaño. Hay tres modos de acceso: 
+* _ReadWriteOnce_ (lectura-escritura por un solo nodo)
+* _ReadOnlyMany_ (lectura-escritura por muchos nodos)
+* _ReadWriteMany_ (lectura-escritura por muchos nodos). 
+Una vez que se encuentra un __VolumenPersistente__ adecuado, está vinculado a un __PersistentVolumeClaim__. 
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/12.4_PersistentVolumeClaim.png)
+
+Después de ser encontrado, el recurso __PersistentVolumeClaim__ puede ser usado en un __Pod__.
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/12.4_PersistentVolumeClaimPod.png)
+
+Una vez que el usuario termina su trabajo, el __PersistentVolumes__ adjuntos pueden ser liberados. Los __PersistentVolumes__ pueden entonces ser reclamados (para que un administrador verifique y/o agregue datos), eliminados (se eliminan tanto los datos como el volumen), o reciclados para su uso futuro (sólo se eliminan los datos).
+
+
 ## 12.5. Container Storage Interface (CSI)
+Los orquestadores de contenedores como Kubernetes, Mesos, Docker o Cloud Foundry solían tener sus propios métodos de gestión del almacenamiento externo mediante volúmenes. Para los proveedores de almacenamiento, era un desafío administrar diferentes plugins de Volumen para diferentes orquestadores. Los proveedores de almacenamiento y los miembros de la comunidad de diferentes orquestadores comenzaron a trabajar juntos para estandarizar la interfaz de Volume; un plugin de Volume construido utilizando un CSI estandarizado diseñado para funcionar en diferentes orquestadores de contenedores.
+
+Entre las versiones v1.9 y v1.13 de Kubernetes, CSI maduró de alfa a soporte estable, lo que hace que la instalación de nuevos plugins de volumen compatibles con CSI sea muy fácil. Con CSI, los proveedores de almacenamiento de terceros pueden desarrollar soluciones sin necesidad de añadirlas al código base de Kubernetes. 
+
 
 ## Chapter 13. ConfigMaps and Secrets<a name="chapter13"></a>
 ## 13. ConfigMaps and Secrets
+Mientras se despliega una aplicación, es posible que tengamos que pasar parámetros de tiempo de ejecución como detalles de configuración, permisos, contraseñas, fichas, etc. Supongamos que necesitamos desplegar diez aplicaciones diferentes para nuestros clientes, y para cada cliente, necesitamos mostrar el nombre de la compañía en la interfaz de usuario. Entonces, en lugar de crear diez imágenes Docker diferentes para cada cliente, podemos usar la imagen de la plantilla y pasar los nombres de los clientes como parámetros de tiempo de ejecución. En estos casos, podemos utilizar el recurso de la __ConfigMap API__. Del mismo modo, cuando queramos pasar información confidencial, podemos utilizar el recurso de la __Secrets API__.
+
+
 ## 13.1. ConfigMaps
+Los __ConfigMaps__ nos permiten desacoplar los detalles de la configuración de la imagen del contenedor. Usando __ConfigMaps__, pasamos los datos de configuración como pares _key-value_, que son consumidos por __Pods__ o cualquier otro componente del sistema y _controllers_, _environment variables_, conjuntos de comandos y argumentos, o _volumes_. Podemos crear __ConfigMaps__ a partir de valores literales, de archivos de configuración, de uno o más archivos o directorios.
+
+
 ## 13.2. Create a ConfigMap from Literal Values and Display Its Details
+Se puede crear un __ConfigMap__ con el comando __kubectl create__, y podemos mostrar sus detalles usando el comando __kubectl get__.
+
+__Create the ConfigMap__
+
+```
+$ kubectl create configmap my-config --from-literal=key1=value1 --from-literal=key2=value2
+configmap/my-config created 
+```
+
+__Display the ConfigMap Details for my-config__
+
+```yaml
+$ kubectl get configmaps my-config -o yaml
+apiVersion: v1
+data:
+  key1: value1
+  key2: value2
+kind: ConfigMap
+metadata:
+  creationTimestamp: 2019-05-31T07:21:55Z
+  name: my-config
+  namespace: default
+  resourceVersion: "241345"
+  selfLink: /api/v1/namespaces/default/configmaps/my-config
+  uid: d35f0a3d-45d1-11e7-9e62-080027a46057
+```
+
+Con la opción __-o yaml__, pedimos al comando __kubectl__ que escupa la salida en formato YAML. Como podemos ver, el objeto tiene el tipo __ConfigMap__, y tiene los pares _key-value_ dentro del campo de datos. El nombre de __ConfigMap__ y otros detalles forman parte del campo de _metadata_.
+
+
 ## 13.3. Create a ConfigMap from a Configuration File
+Primero, necesitamos crear un archivo de configuración con el siguiente contenido:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: customer1
+data:
+  TEXT1: Customer1_Company
+  TEXT2: Welcomes You
+  COMPANY: Customer1 Company Technology Pct. Ltd.
+```
+
+donde especificamos el _kind_, _metadata_ y _data_, apuntando al punto final _v1_ del _API Server_.
+
+Si nombramos el archivo con la configuración anterior como _customer1-configmap.yaml_, podemos crear el __ConfigMap__ con el siguiente comando:
+
+```
+$ kubectl create -f customer1-configmap.yaml
+configmap/customer1 created
+```
+
+
 ## 13.4. Create a ConfigMap from a File
+Necesitamos crear el fichero file _permission-reset.properties_ con la siguiente configuracion:
+
+```
+permission=read-only
+allowed="true"
+resetCount=3
+```
+
+Podemos crear el __ConfigMap__ con el siguinte comando:
+
+```
+$ kubectl create configmap permission-config --from-file=<path/to/>permission-reset.properties
+configmap/permission-config created
+```
+
 ## 13.5. Use ConfigMaps Inside Pods
+* __As Environment Variable__
+Dentro de un Contenedor, podemos recuperar los datos de los valores de las claves de un __ConfigMap__ entero o los valores de claves específicas del ConfigMap como _Environment Variable_.
+
+En el siguiente ejemplo, todas las variables de entorno del Contenedor_ myapp-full-container_ reciben los valores de __full-config-map__ _ConfigMap keys_:
+
+```yaml
+...
+  containers:
+  - name: myapp-full-container
+    image: myapp
+    envFrom:
+    - configMapRef:
+      name: full-config-map
+...
+```
+
+En el siguiente ejemplo, las variables de entorno del contenedor _myapp-specific-container_ reciben sus valores de pares _key-value_ específicos de __ConfigMaps__ separados:
+
+```yaml
+...
+  containers:
+  - name: myapp-specific-container
+    image: myapp
+    env:
+    - name: SPECIFIC_ENV_VAR1
+      valueFrom:
+        configMapKeyRef:
+          name: config-map-1
+          key: SPECIFIC_DATA
+    - name: SPECIFIC_ENV_VAR2
+      valueFrom:
+        configMapKeyRef:
+          name: config-map-2
+          key: SPECIFIC_INFO
+...
+
+```
+
+Con lo anterior, obtendremos la variable de entorno _SPECIFIC_ENV_VAR1_ establecida al valor de la clave _SPECIFIC_DATA_ de _config-map-1_ __ConfigMap__, y la variable de entorno SPECIFIC_ENV_VAR2 establecida al valor de la clave _SPECIFIC_INFO_ de _config-map-2_ __ConfigMap__.
+
+
+* __As Volume__
+Podemos montar un __ConfigMap__ _vol-config-map_ como un __Volume__ dentro de un __Pod__. Para cada clave en el __ConfigMap__, se crea un archivo en la ruta de montaje (donde el archivo se nombra con el nombre de la clave) y el contenido de ese archivo se convierte en el valor de la clave respectiva:
+
+```yaml
+...
+  containers:
+  - name: myapp-vol-container
+    image: myapp
+    volumeMounts:
+    - name: config-volume
+      mountPath: /etc/config
+  volumes:
+  - name: config-volume
+    configMap:
+      name: vol-config-map
+...
+```
+
 ## 13.6. Secrets
+Asumamos que tenemos una aplicación de blog de Wordpress, en la cual nuestro frontend de _Wordpress_ se conecta al backend de la base de datos _MySQL_ usando una contraseña. Mientras creamos el __Deployment__ para wordpress, podemos incluir la contraseña de MySQL en el archivo YAML del __Deployment__, pero la contraseña no estaría protegida. La contraseña estaría disponible para cualquiera que tenga acceso al archivo de configuración.
+
+En este escenario, el objeto __Secret__ puede ayudar permitiéndonos codificar la información sensible antes de compartirla. Con __Secrets__, podemos compartir información sensible como contraseñas, fichas o claves en forma de pares _key-value_, similar a __ConfigMaps__; así, podemos controlar cómo se utiliza la información de un __Secret__, reduciendo el riesgo de exposiciones accidentales. En Despliegues u otros recursos, se hace referencia al objeto Secreto, sin exponer su contenido.
+
+Es importante tener en cuenta que los datos del __Secret__ se almacenan como texto plano dentro de __etcd__, por lo que los administradores deben limitar el acceso al __API Server__ y __etcd__. Una característica más reciente permite que los datos secretos se cifren en reposo mientras se almacenan en __etcd__; una característica que debe habilitarse a nivel del __API Server__.
+
+
 ## 13.7. Create a Secret from Literal and Display Its Details
+Para crear un __Secret__, podemos usar el comando _kubectl create secret_:
+
+```
+  $ kubectl create secret generic my-password --from-literal=password=mysqlpassword
+```
+
+El comando anterior crearía un __Secret__ llamado _my-password_, que tiene el valor de la clave de la contraseña establecida en _mysqlpassword_.
+
+Después de crear un secreto con éxito podemos analizarlo con los comandos __get__ y __describe__. No revelan el contenido del __Secret__. El tipo está listado como _Opaque_.
+
+```
+$ kubectl get secret my-password
+NAME          TYPE     DATA   AGE 
+my-password   Opaque   1      8m
+
+$ kubectl describe secret my-password
+Name:          my-password
+Namespace:     default
+Labels:        <none>
+Annotations:   <none>
+
+Type  Opaque
+
+Data
+====
+password:  13 bytes
+```
+
 ## 13.8. Create a Secret Manually
+Podemos crear un __Secret__ manualmente desde un archivo de configuración de YAML. El archivo de ejemplo que se muestra a continuación se llama _mypass.yaml_. Hay dos tipos de maps para información sensible dentro de un Secreto: __data__ y __stringData__.
+
+Con los __data__, cada valor de un campo de información sensible debe ser codificado usando __base64__. Si queremos tener un archivo de configuración para nuestro __Secret__, primero debemos crear la codificación de __base64__ para nuestra contraseña:
+
+```
+$ echo mysqlpassword | base64
+bXlzcWxwYXNzd29yZAo=
+```
+
+y luego lo usaremos en el archivo de configuración:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-password
+type: Opaque
+data:
+  password: bXlzcWxwYXNzd29yZAo=
+```
+
+Tenga en cuenta que la codificación __base64__ no significa encriptación, y cualquiera puede decodificar fácilmente nuestros datos codificados:
+
+```
+$ echo "bXlzcWxwYXNzd29yZAo=" | base64 --decode
+mysqlpassword
+```
+
+Por lo tanto, asegúrate de no confirmar un archivo de configuración de __Secret__ en el código fuente.
+
+Con los mapas __stringData__, no hay necesidad de codificar el valor de cada campo de información sensible. El valor del campo sensible será codificado cuando se cree el my-password Secret:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-password
+type: Opaque
+stringData:
+  password: mysqlpassword
+```
+
+Usando el archivo de configuración _mypass.yaml_ podemos ahora crear un __Secret__ con el comando __kubectl create__: 
+
+```
+$ kubectl create -f mypass.yaml
+secret/my-password created
+```
+
 ## 13.9. Create a Secret from a File and Display Its Details
+Para crear un __Secret__ a partir de un fichero, utilizamos __kubectl create secret__:
+
+Primero, encriptamos los datos sensibles en un fichero de texto:
+
+```
+  $ echo mysqlpassword | base64
+ bXlzcWxwYXNzd29yZAo=
+
+  $ echo -n 'bXlzcWxwYXNzd29yZAo=' > password.txt
+```
+
+Creamos el __Secret__ a partir del fichero:
+
+```
+  $ kubectl create secret generic my-file-password --from-file=password.txt
+  secret/my-file-password created
+```
+
+Después de crear un __Secret__ con éxito podemos analizarlo con los comandos __get__ y __describe__. No revelan el contenido del __Secret__. El tipo está listado como _Opaque_.
+
+```
+$ kubectl get secret my-file-password
+NAME               TYPE     DATA   AGE 
+my-file-password   Opaque   1      8m
+
+$ kubectl describe secret my-file-password
+Name:          my-file-password
+Namespace:     default
+Labels:        <none>
+Annotations:   <none>
+
+Type  Opaque
+
+Data
+====
+password.txt:  13 bytes
+```
+
 ## 13.10. Use Secrets Inside Pods
+Los __Secrets__ son consumidos por los Contenedores en los __Pods__ como volúmenes de datos montados, o como variables de entorno, y son referenciados en su totalidad o específicos _key-values_.
+
+* __Using Secrets as Environment Variables__
+A continuación hacemos referencia sólo a la clave de la contraseña del my-password Secret y asignamos su valor a la variable de entorno _WORDPRESS_DB_PASSWORD_:
+
+```yaml
+....
+spec:
+  containers:
+  - image: wordpress:4.7.3-apache
+    name: wordpress
+    env:
+    - name: WORDPRESS_DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: my-password
+          key: password
+....
+```
+
+* __Usar los secretos como archivos de una cápsula__
+También podemos montar un __Secret__ como un Volumen dentro de un __Pod__. El siguiente ejemplo crea un archivo para cada clave de _My-Password_ __Secret__ (donde los archivos se nombran según los nombres de las claves), los archivos que contienen los valores del Secreto:
+
+```yaml
+....
+spec:
+  containers:
+  - image: wordpress:4.7.3-apache
+    name: wordpress
+    volumeMounts:
+    - name: secret-volume
+      mountPath: "/etc/secret-data"
+      readOnly: true
+  volumes:
+  - name: secret-volume
+    secret:
+      secretName: my-password
+....
+```
 
 
 ## Chapter 14. Ingress<a name="chapter14"></a>
 ## 14. Ingress
+En un capítulo anterior, vimos cómo podemos acceder a nuestra aplicación desplegada en contenedores desde el mundo exterior a través de los __Services__. Entre los tipos de __Services__, el __NodePort__ y el __LoadBalancer__ son los más utilizados. Para el __LoadBalancer__ _ServiceType_, necesitamos tener el apoyo de la infraestructura subyacente. Incluso después de tener el soporte, puede que no queramos usarlo para cada __Service__, ya que los recursos del __LoadBalancer__ son limitados y pueden aumentar los costos significativamente. Administrar el __NodePort__ _ServiceType_ también puede ser difícil a veces, ya que necesitamos actualizar nuestra configuración de proxy y hacer un seguimiento de los puertos asignados. En este capítulo, exploraremos el recurso __API Ingress__, que representa otra capa de abstracción, desplegada frente a los recursos de __API Service__, ofreciendo un método unificado para gestionar el acceso a nuestras aplicaciones desde el mundo externo.
+
+
 ## 14.1. Ingress I
+Con los __Service__, las reglas de enrutamiento están asociadas a un __Service__ determinado. Existen mientras exista el __Service__, y hay muchas reglas porque hay muchos __Service__ en el clúster. Si podemos desacoplar de alguna manera las reglas de enrutamiento de la aplicación y centralizar la gestión de las reglas, podemos entonces actualizar nuestra aplicación sin preocuparnos por su acceso externo. Esto se puede hacer utilizando el recurso __Ingress__. 
+
+De acuerdo con kubernetes.io,
+
+> "Un __Ingress__ es un conjunto de reglas que permiten que las conexiones entrantes lleguen a los __Services__ del cluster".
+
+Para permitir que la conexión entrante llegue a los __Service__ del clúster, __Ingress__ configura un __Load Balancer__ HTTP/HTTPS de Nivel 7 para los __Services__ y proporciona lo siguiente:
+
+* TLS (Transport Layer Security).
+* Name-based virtual hosting .
+* Fanout routing.
+* Loadbalancing.
+* Custom rules.
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/14.1_Ingress.png)
+
+
 ## 14.2. Ingress II
+Con __Ingress__, los usuarios no se conectan directamente a un __Service__. Los usuarios llegan al __Ingress endpoint__ y, desde allí, la solicitud es enviada al __Service__ deseado. A continuación se puede ver un ejemplo de una definición de __Ingress__ de muestra:
+
+```yaml
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: virtual-host-ingress
+  namespace: default
+spec:
+  rules:
+  - host: blue.example.com
+    http:
+      paths:
+      - backend:
+          serviceName: webserver-blue-svc
+          servicePort: 80
+  - host: green.example.com
+    http:
+      paths:
+      - backend:
+          serviceName: webserver-green-svc
+          servicePort: 80
+```
+
+En el ejemplo anterior, las solicitudes de los usuarios tanto a _blue.example.com_ como a _green.example.com_ irían al mismo __Ingress endpoint__ y, desde allí, se remitirían al servidor _web-azul-svc_, y al servidor _web-verde-svc_, respectivamente. Este es un ejemplo de una regla de __Ingress__ de __Name-Based Virtual Hosting__. 
+
+También podemos tener reglas de __Fanout Ingress__, cuando las peticiones a _example.com/blue_ y _example.com/green_ serían reenviadas a _webserver-blue-svc_ y _webserver-green-svc_, respectivamente
+
+```yaml
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: fan-out-ingress
+  namespace: default
+spec:
+  rules:
+  - host: example.com
+    http:
+      paths:
+      - path: /blue
+        backend:
+          serviceName: webserver-blue-svc
+          servicePort: 80
+      - path: /green
+        backend:
+          serviceName: webserver-green-svc
+          servicePort: 80
+```
+
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/14.3_Ingress.png)
+
+El recurso __Ingress__ no realiza por sí mismo ningún reenvío de solicitudes, sino que se limita a aceptar las definiciones de las normas de enrutamiento del tráfico. El __Ingress__ es realizado por un __Ingress Controller__.
+
+
 ## 14.3. Ingress Controller
+Un __Ingress Controller__ es una aplicación que vigila el __API Server__ del __Master Node__ para detectar cambios en los recursos de __Ingress__ y actualiza el __Load Balancer__ de Capa 7 en consecuencia. Kubernetes soporta diferentes __Ingress Controller__, y, si es necesario, también podemos construir el nuestro. _GCE L7 Load Balancer Controller_ y _Nginx Ingress Controller_  son los __Ingress Controller__ más utilizados. Otros controladores son _Istio_, _Kong_, _Traefik_, etc.
+
+* __Start the Ingress Controller with Minikube__
+Minikube se envía con la configuración del __Nginx Ingress Controller__ como un _addon_, desactivado por defecto. Puede ser fácilmente activado ejecutando el siguiente comando:
+
+```
+$ minikube addons enable ingress
+```
+
+
 ## 14.4. Deploy an Ingress Resource
+Una vez que el __Ingress Controller__ es desplegado, podemos crear un recurso de entrada usando el comando __kubectl create__. Por ejemplo, si creamos un archivo _virtual-host-ingress.yaml_ con la definición de la regla __Name-Based Virtual Hosting__ que vimos en la sección _Ingress II_, entonces usamos el siguiente comando para crear un recurso __Ingress__:
+
+```
+$ kubectl create -f virtual-host-ingress.yaml
+```
+
+
 ## 14.5. Access Services Using Ingress
+Con el recurso __Ingress__ que acabamos de crear, ahora deberíamos poder acceder a los servicios _webserver-azul-svc_ o _webserver-verde-svc_ usando las URLs _blue.example.com_ y _green.example.com_. Como nuestra configuración actual está en Minikube, necesitaremos actualizar el archivo de configuración del host (/etc/hosts en Mac y Linux) en nuestra estación de trabajo a la IP de Minikube para esas URLs. Después de la actualización, el archivo debería tener un aspecto similar a:
+
+```
+$ cat /etc/hosts
+127.0.0.1        localhost
+::1              localhost
+192.168.99.100   blue.example.com green.example.com 
+```
+
+Ahora podemos abrir blue.example.com y green.example.com en el navegador y acceder a cada aplicación.
 
 
 ## Chapter 15. Advanced Topics<a name="chapter15"></a>
 ## 15. Advanced Topics
+Hasta ahora, en este curso, hemos dedicado la mayor parte de nuestro tiempo a entender los conceptos básicos de Kubernetes y los flujos de trabajo simples para construir una base sólida. Para dar soporte a las cargas de trabajo de producción de clase empresarial, Kubernetes también admite la _Autoscaling_, _Rolling updates_, _rollbacks_, la gestión de _quotas_, la autorización a través de _RBAC_, la gestión de paquetes, las políticas de red y seguridad, etc. En este capítulo, cubriremos brevemente un número limitado de estos temas avanzados, pero profundizar en los detalles estaría fuera del alcance de este curso.
+
+
 ## 15.1. Annotations
+Con las __Annotations__, podemos adjuntar _metadata_ arbitrarios no identificables a cualquier objeto, en un formato de _key-value_:
+
+```json
+"annotations": {
+  "key1" : "value1",
+  "key2" : "value2"
+}
+```
+
+A diferencia de las __Labels__, las __Annotations__ no se usan para identificar y seleccionar objetos.
+* Store build/release IDs, PR numbers, git branch, etc.
+* Phone/pager numbers of people responsible, or directory entries specifying where such information can be found.
+* Pointers to logging, monitoring, analytics, audit repositories, debugging tools, etc.
+* Etc.
+
+Por ejemplo, al crear un __Deployment__, podemos añadir una descripción como se ve a continuación:
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: webserver
+  annotations:
+    description: Deployment based PoC dates 2nd May'2019
+....
+```
+
+Las __Annotations__ se muestran mientras se describe un objeto:
+
+```yaml
+$ kubectl describe deployment webserver
+Name:                webserver
+Namespace:           default
+CreationTimestamp:   Fri, 03 May 2019 05:10:38 +0530
+Labels:              app=webserver
+Annotations:         deployment.kubernetes.io/revision=1
+                     description=Deployment based PoC dates 2nd May'2019
+...
+```
+
+
 ## 15.2. Jobs and CronJobs
+Un __Job__ crea una o más __Pods__ para realizar una tarea determinada. El objeto __Job__ asume la responsabilidad de los fallos de los __Pods__. Se asegura de que la tarea dada se complete con éxito. Una vez que la tarea se ha completado, todos los __Pods__ han terminado automáticamente. Las opciones de configuración del __Job__ incluyen:
+
+* __parallelism__ - para establecer el número de __Pods__ que pueden funcionar en paralelo;
+* __completions__ - para establecer el número de __completions__ esperadas;
+* __activeDeadlineSeconds__ - para establecer la duración del __Job__;
+* __backoffLimit__ - para establecer el número de reintentos antes de que el __Job__ sea marcado como fallido;
+* __ttlSecondsAfterFinished__ - para retrasar la limpieza de los trabajos terminados.
+
+A partir de la versión 1.4 de Kubernetes, también podemos realizar __Jobs__ a horas/fechas programadas con __CronJobs__, donde se crea un nuevo objeto __(Job)__ aproximadamente una vez por cada ciclo de ejecución. Las opciones de configuración de __CronJob__ incluyen:
+
+* __startingDeadlineSeconds__ - para establecer la fecha límite para iniciar un __Job__ si se ha perdido la hora programada;
+* __concurrencyPolicy__ - para permitir o prohibir __Job__ concurrentes o para reemplazar los antiguos __Job__ con los nuevos. 
+
+
 ## 15.3. Quota Management
+Cuando hay muchos usuarios que comparten un determinado cluster de Kubernetes, siempre existe una preocupación por el uso justo. Un usuario no debe sacar provecho indebido. Para responder a esta preocupación, los administradores pueden utilizar el recurso de la __ResourceQuota__, que proporciona restricciones que limitan el consumo de recursos agregados por __Namespace__.
+
+Podemos establecer los siguientes tipos de __quotas__ por __Namespace__:
+
+* __Compute Resource Quota__
+Podemos limitar la suma total de recursos de computación (CPU, memoria, etc.) que pueden ser solicitados en un determinado __Namespace__.
+* __Storage Resource Quota__
+Podemos limitar la suma total de recursos de almacenamiento (PersistentVolumeClaims, requests.storage, etc.) que se pueden solicitar.
+* __Object Count Quota__
+Podemos restringir el número de objetos de un tipo determinado (_pods_, _ConfigMaps_, _PersistentVolumeClaims_, _ReplicationControllers_, _Services_, _Secrets_, etc.).
+
+
 ## 15.4. Autoscaling
+Si bien es bastante fácil escalar manualmente unos pocos objetos de Kubernetes, puede que no sea una solución práctica para un cluster en producción en el que se despliegan cientos o miles de objetos. Necesitamos una solución de escalado dinámico que añada o elimine objetos del clúster en función de la utilización de los recursos, la disponibilidad y los requisitos. 
+
+El __Autoscaling__ puede implementarse en un clúster de Kubernetes mediante _controllers_ que ajustan periódicamente el número de objetos en ejecución basándose en métricas únicas, múltiples o personalizadas. Hay varios tipos de _autoscalers_ disponibles en Kubernetes que pueden implementarse individualmente o combinarse para obtener una solución de _autoscaling_ más robusta:
+
+* __Horizontal Pod Autoscaler (HPA)__ 
+HPA es un recurso API de controlador basado en algoritmos que ajusta automáticamente el número de réplicas en un __ReplicaSet__, __Deployment__ o __Replication Controller__ basado en la utilización de la CPU.
+
+* __Vertical Pod Autoscaler (VPA)__
+El VPA establece automáticamente los requisitos de recursos del contenedor (CPU y memoria) en un __Pod__ y los ajusta dinámicamente en tiempo de ejecución, basándose en los datos históricos de utilización, la disponibilidad actual de recursos y los eventos en tiempo real.
+
+* __Cluster Autoscaler__
+El _autoscaler_ de clúster redimensiona automáticamente el clúster de Kubernetes cuando no hay suficientes recursos disponibles para los nuevos __Pods__ que se esperan programar o cuando hay nodos subutilizados en el clúster.
+
+
 ## 15.5. DaemonSets
+En los casos en que necesitemos recoger datos monitorización de todos los Nodes, o ejecutar un demonio de almacenamiento en todos los Nodes, entonces necesitamos un tipo específico de __Pod__ que se ejecute en todos los Nodes en todo momento. Un __DaemonSet__ es el objeto que nos permite hacer justamente eso. Es un recurso crítico de la API de controladores para clusters de Kubernetes _multi-Nodes_. El agente __kube-proxy__ que se ejecuta como un __Pod__ en cada uno de los Nodes del clúster es gestionado por un __DaemonSet__.  
+
+Cada vez que se añade un Node al clúster, se crea automáticamente un __Pod__ de un __DaemonSet__ determinado en él. Aunque asegura un proceso automatizado, los __Pods__ del __DaemonSet__ son colocados en los Nodes por el __Scheduler__ predeterminado del cluster. Cuando el NOde muere o es removido del cluster, los respectivos __Pods__ son basura recolectada. Si un __DaemonSet__ es eliminado, todos los __Pods__ que ha creado son eliminados también.
+
+Una nueva característica del recurso __DaemonSet__ permite que sus __Pods__ sean programados solo en nodos específicos configurando __nodeSelectors__ y reglas de __affinity__ de Nodes. Similar a los recursos de __Deployment__, los __DaemonSets__ soportan _rolling updates_ y _rollbacks_. 
+
+
 ## 15.6. StatefulSets
+El controlador __StatefulSet__ se utiliza para aplicaciones de estado que requieren una identidad única, como el nombre, identificaciones de red, ordenamiento estricto, etc. Por ejemplo, _Mysql Cluster_, _etcd cluster_.
+
+El controlador __StatefulSet__ proporciona identidad y orden garantizado de despliegue y escalado a __Pods__. Similar a los __Deployments__, __StatefulSets__ utiliza __ReplicaSets__ como controladores intermedios de __Pods__ y soporta _rolling updates_ y _rollbacks_.
+
+
 ## 15.7. Kubernetes Federation
+Con la __Kubernetes Cluster Federation__ podemos gestionar varios clusters de Kubernetes desde un solo plano de control. Podemos sincronizar los recursos entre los clusters federados y tener un descubrimiento cruzado de los clusters. Esto nos permite realizar __Deployments__ en todas las regiones, acceder a ellos mediante un registro DNS global y lograr _HA_. 
+
+Aunque sigue siendo una característica de _Alpha_, la _Federación_ es muy útil cuando queremos construir una solución híbrida, en la que podemos tener un cluster corriendo dentro de nuestro centro de datos privado y otro en la nube pública, permitiéndonos evitar el bloqueo del proveedor. También podemos asignar pesos para cada cluster de la _Federación_, para distribuir la carga en base a reglas personalizadas. 
+
+
 ## 15.8. Custom Resources
+En Kubernetes, un __Resources__ es un _endpoint_ de la API que almacena una colección de objetos de la API. Por ejemplo, un recurso de __Pod__ contiene todos los _objetos de Pod_.
+
+Aunque en la mayoría de los casos los recursos existentes de Kubernetes son suficientes para cumplir nuestros requisitos, también podemos crear nuevos recursos utilizando __Custom Resources__. Con los recursos personalizados, no tenemos que modificar el origen de Kubernetes.
+
+Los recursos personalizados son de naturaleza dinámica, y pueden aparecer y desaparecer en un clúster ya en funcionamiento en cualquier momento.
+
+Para hacer un recurso declarativo, debemos crear e instalar un __Custom Controller__, que puede interpretar la estructura del recurso y realizar las acciones necesarias. Los controladores personalizados pueden ser desplegados y administrados en un clúster ya en funcionamiento.
+
+Hay dos maneras de agregar recursos personalizados:
+
+* __Custom Resource Definitions (CRDs)__
+Esta es la forma más fácil de añadir __Custom Resources__ y no requiere ningún conocimiento de programación. Sin embargo, construir el __Custom Controller__ requeriría algo de programación.
+* __API Aggregation__
+Para un control más fino, podemos escribir __API Aggregation__. Son __API Servers__ subordinados que se encuentran detrás del __API Server__ principal. El __API Server__ principal actúa como proxy para todas las solicitudes de API entrantes; maneja las que se basan en sus capacidades y las proxies sobre las demás solicitudes destinadas a los __API Server__ subordinados.
+
+
 ## 15.9. Helm
+Para desplegar una aplicación, utilizamos diferentes _manifest_ de Kubernetes, como __Deployments__, __Services__, __Volume Claims__, __Ingress__, etc. A veces, puede resultar cansado desplegarlos uno por uno. Podemos agrupar todos esos manifiestos después de tentarlos en un formato bien definido, junto con otros _metadata_. Este conjunto se conoce como __Chart__. Estos __charts__ pueden ser servidos a través de repositorios, como los que tenemos para los paquetes _rpm_ y _deb_. 
+
+__Helm__ es un gestor de paquetes (análogo a yum y apto para Linux) para Kubernetes, que puede instalar/actualizar/eliminar esos __Charts__ en el cluster de Kubernetes.
+
+Helm tiene dos componentes:
+
+* Un cliente llamado __helm__, que se ejecuta en el equipo del usuario.
+* Un servidor llamado __tiller__, que corre dentro del cluster de Kubernetes.
+
+El cliente de __helm__ se conecta al __tille server__ para manejar los __charts__.
+
 ## 15.10. Security Contexts and Pod Security Policies
+A veces necesitamos definir privilegios específicos y configuraciones de control de acceso para los __Pods__ y los __Contenedores__. Los __Security Contexts__ nos permiten establecer un control de acceso discrecional para los permisos de acceso a los objetos, la ejecución privilegiada, las capacidades, las _labels_ de seguridad, etc. Sin embargo, su efecto se limita a los __Pods__ y __Contenedores__ individuales donde tales ajustes de configuración de contexto se incorporan en la sección __spec__. 
+
+Para aplicar los ajustes de seguridad a múltiples __Pods__ y __Contenedores__ en todo el cluster, podemos definir __Pod Security Policies__. Éstas permiten una configuración de seguridad más precisa para controlar el uso del __Namespace__ del host, la red y los puertos del host, _file system group_, el uso de los _volume types_, la aplicación de la identificación de usuario y de grupo del contenedor, el aumento de los privilegios de root, etc. 
+
+
 ## 15.11. Network Policies
+Kubernetes fue diseñado para permitir que todos los __Pods__ se comuniquen libremente, sin restricciones, con todos los demás __Pods__ en el cluster __Namespaces__. Con el tiempo se hizo evidente que no era un diseño ideal, y que era necesario establecer mecanismos para restringir la comunicación entre determinados __Pods__ y las aplicaciones del cluster __Namespace__. Las __Network Policies__ son conjuntos de reglas que definen la forma en que se permite a los __Pods__ hablar con otros __Pods__ y recursos dentro y fuera del cluster. Los __Pods__ que no estén cubiertos por ninguna __Network Policies__ continuarán recibiendo tráfico sin restricciones desde cualquier _endpoint_. 
+
+Las __Network Policies__ son muy similares a los típicos _Firewalls_. Están diseñadas para proteger principalmente los activos ubicados dentro del Firewall pero también pueden restringir el tráfico saliente basándose en conjuntos de reglas y políticas.
+
+El recurso __Network Policy__ API especifica __podSelectors__, __Ingress__ and/or __Egress__ _policyTypes_, y reglas basadas en __ipBlocks__ y __ports__ de origen y destino. También se pueden definir políticas muy simplistas de permiso o denegación por defecto. Como buena práctica, se recomienda definir una política de denegación por defecto para bloquear todo el tráfico hacia y desde el __Namespace__, y luego definir conjuntos de reglas para que se permita la entrada y salida del tráfico específico en el __Namespace__. 
+
+Tengamos en cuenta que no todas las soluciones de red disponibles para los Kubernetes son compatibles con las políticas de red. Revise la sección de _Pod-to-Pod Communication_ desde el capítulo de _Kubernetes Architecture_ si es necesario. De forma predeterminada, las __Network Policies__ son recursos de API del __Namespace__, pero ciertos complementos de red proporcionan características adicionales para que las __Network Polidices__ se puedan aplicar en todo el clúster. 
+
+
 ## 15.12. Monitoring and Logging
+En los Kubernetes, tenemos que recopilar datos de uso de recursos por __Pods__, __Services__, __Nodes__, etc., para comprender el consumo general de recursos y tomar decisiones para escalar una aplicación determinada. Dos soluciones de monitorización de Kubernetes muy populares son el Kubernetes __Metrics Server__ y __Prometheus__.
+
+* __Metrics Server__
+__Metrics Server__ es un agregador de datos de uso de recursos en todo el cluster, una característica relativamente nueva en Kubernetes.
+
+* __Prometheus__
+__Prometheus__, ahora parte de la CNCF (Cloud Native Computing Foundation), también puede ser usado para __scrape__ el uso de recursos de diferentes componentes y objetos de Kubernetes.
+
+Otro aspecto importante para _troubleshooting_ y _debugging_ es el __Logging__, en el que recogemos los registros de los diferentes componentes de un sistema determinado. En Kubernetes, podemos recoger los registros de diferentes componentes del cluster, Objects, Nodes, etc. Sin embargo, desafortunadamente, Kubernetes no proporciona por defecto el _Logging_ de todo el clúster, por lo que se necesitan herramientas de terceros para centralizar y agregar los registros del clúster. La forma más habitual de recopilar los registros es mediante el uso de _Elasticsearch_, que utiliza _fluentd_ con una configuración personalizada como agente en los Nodes. __fluentd__ es un recopilador de datos de código abierto, que también forma parte de CNCF.
+
+
 
 ## Chapter 16. Kubernetes Community<a name="chapter16"></a>
 ## 16. Kubernetes Community
+Al igual que con cualquier otro proyecto de código abierto, la __Community__ juega un papel vital en el desarrollo de los Kubernetes. La comunidad decide __roadmap__ de los proyectos y trabaja para ello. La comunidad se involucra en diferentes foros online y offline, como Meetups, Slack, reuniones semanales, etc. En este capítulo, exploraremos la comunidad de Kubernetes y veremos cómo usted también puede formar parte de ella. 
+
+
 ## 16.1. Kubernetes Community
+Con más de 53K estrellas de GitHub, Kubernetes es uno de los proyectos de código abierto más populares. Los miembros de la comunidad no sólo ayudan con el código fuente, sino que también ayudan a compartir el conocimiento. La comunidad participa en actividades tanto en línea como fuera de línea.
+
+Actualmente, existe un proyecto llamado K8s Port, que reconoce y recompensa a los miembros de la comunidad por sus contribuciones a Kubernetes. Esta contribución puede ser en forma de código, asistiendo y hablando en reuniones, respondiendo a preguntas sobre el desbordamiento de la pila, etc.
+
+A continuación, revisaremos algunos de los medios utilizados por la comunidad de Kubernetes.
+
+
 ## 16.2. Weekly Meetings and Meetup Groups
+__Weekly Meetings__
+Una reunión semanal de la comunidad se lleva a cabo usando herramientas de videoconferencia. Puedes solicitar una invitación para el calendario desde aquí.
+
+__Meetup Groups__
+Hay muchos grupos de reunión en todo el mundo, donde los miembros de las comunidades locales se reúnen a intervalos regulares para discutir sobre los kubernetes y su ecosistema.
+
+También hay algunos grupos de encuentro en línea, donde los miembros de la comunidad pueden reunirse virtualmente.
+
+
 ## 16.3. Slack Channels and Mailing Lists
+__Slack Channels__
+Los miembros de la comunidad son muy activos en el Kubernetes Slack. Hay diferentes canales basados en temas, y cualquiera puede unirse y participar en los debates. Puedes discutir con el equipo de Kubernetes en el canal #kubernetes-usuarios. 
+
+__Mailing Lists__
+Hay listas de correo de usuarios y desarrolladores de Kubernetes, a las que puede unirse cualquier persona interesada.
+
+
 ## 16.4. SIGs and Stack Overflow
+__Special Interest Groups__
+Los Grupos de Interés Especial (GIE) se centran en partes específicas del proyecto de los Kubernetes, como la programación, la autorización, el trabajo en red, la documentación, etc. Cada grupo puede tener un flujo de trabajo diferente, basado en sus requisitos específicos. Una lista con todos los SIG actuales se puede encontrar aquí.
+
+Dependiendo de la necesidad, se puede crear un nuevo SIG.
+
+__Stack Overflow__
+Además de Slack y las listas de correo, los miembros de la comunidad pueden obtener apoyo de Stack Overflow, también. Stack Overflow es un entorno online donde puedes publicar preguntas para las que no encuentras respuesta. El equipo de Kubernetes también monitoriza los mensajes etiquetados como Kubernetes.
+
+
 ## 16.5. CNCF Events
+El CNCF organiza numerosas conferencias internacionales sobre los gobernantes, así como otros proyectos del CNCF. Para obtener más información sobre estos eventos, por favor haga clic aquí.
+
+Tres de las principales conferencias que organiza son:
+
+* KubeCon + CloudNativeCon Europe
+* KubeCon + CloudNativeCon Norteamérica
+* KubeCon + CloudNativeCon China.
+
 ## 16.6. What's Next on Your Kubernetes Journey?
+Ahora que conoce mejor a los Kubernetes, puede continuar su viaje por..:
+
+* Participando en actividades y discusiones organizadas por la comunidad de Kubernetes
+* Asistir a eventos organizados por la Fundación de Computación Nativa en la Nube y la Fundación Linux
+* Amplíe su conocimiento y habilidades de Kubernetes inscribiéndose en el curso LFS258 - Fundamentos de Kubernetes, LFD259 - Kubernetes para desarrolladores, o el LFS458 - Administración de Kubernetes y LFD459 - Kubernetes para desarrolladores de aplicaciones, cursos pagados ofrecidos por la Fundación Linux. 
+* Preparación para los exámenes de Administrador Certificado de Kubernetes o Desarrollador Certificado de Aplicaciones de Kubernetes, ofrecidos por la Cloud Native Computing Foundation
+* Y muchas otras opciones.
