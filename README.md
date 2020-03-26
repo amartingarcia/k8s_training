@@ -23,47 +23,53 @@ k8s
 ## Chapter 1. From Monolith to Microservices<a name="chapter1"></a>
 ## 1. From Monolith to Microservices
 ### 1.1. The legacy Monolith
-La roca, representa la aplicación del monolito (capas sedimentadas de características y lógica redundante traducidas en miles de lineas de código, escritas en un lenguaje de programación no tan moderno, basado en patrones y principios de arquitectura anticuados)
+Una roca, representa la aplicación del _monolito_ 
+> Monolito, capas sedimentadas de características y lógica redundante traducidas en miles de lineas de código, escritas en un lenguaje de programación no tan moderno, basado en patrones y principios de arquitectura anticuados.
 
-Las nuevas características y mejoras añaden complejidad al código, haciendo el desarrollo más desafiante, los tiempos de carga, compilación y construcción aumentan con cada nueva actualización.
-
-Al ser un software grande y único que crece continuamente, tiene que funcionar en un solo sistema que tiene que satisfacer requisitos de computación, memoria, almacenamiento y redes. El hardware de tal capacidad es a la vez complejo y costoso.
-
-Como toda la aplicación del monolito se ejecuta como un solo proceso, la ampliación de las características individuales del monolito es casi imposible. Internamente soporta un número codificado de conexiones y operaciones. Sin embargo, el escalado de toda la aplicación significa desplegar manualmente una nueva instancia del monolito en otro servidor, típicamente detrás de un balanceador de carga, otra solución costosa.
-
-Durante las actualizaciones, parches o migraciones de la aplicación del monolito, se producen tiempos de inactividad y hay que planificar ventanas de mantenimiento ya que se espera que las interrupciones del servicio afecten a los clientes. Si bien existen soluciones para minimizar los tiempos de inactividad de los clientes mediante la configuración de las aplicaciones de monolitos en una configuración activa/pasiva en HA, todavía puede ser un desafío para los ingenieros de sistemas mantener todos los sistemas al mismo nivel de parches.
+Características de un monolito:
+* Las nuevas características y mejoras añaden complejidad al código, mayores tiempos de carga, compilación y construcción.
+* Es un software grande y único que crece continuamente. 
+* Funciona en un solo sistema que tiene que satisfacer requisitos de computación, memoria, almacenamiento y redes. 
+* El hardware a su vez, es complejo y costoso.
+* Se ejecuta como un solo proceso, la ampliación de las características individuales del monolito es casi imposible. 
+* El escalado de toda la aplicación significa desplegar manualmente una nueva instancia del monolito en otro servidor, típicamente detrás de un balanceador de carga, otra solución costosa.
+* Durante las actualizaciones, parches o migraciones, se producen tiempos de inactividad y hay que planificar ventanas de mantenimiento ya que afectarán a todos los clientes. 
+* Aunque existen soluciones para minimizar los tiempos de inactividad como una configuración activa/pasiva en HA, todavía puede ser complejo implementar estas soluciones.
 
 
 ### 1.2. The Modern Microservice.
 Similitudes:
-- Monolito       --> Gran roca
-- Microservicios --> Guijarros
+* Monolito       --> Gran roca
+* Microservicios --> Guijarros
 
-Los guijarros representan la totalidad de la roca individualmente. Además son faciles de seleccionar y agrupar en base al color, tamaño y forma.
-Los microservicios pueden ser desplegados individualmente en servidores separados provistos con los recuros necesarios para cada servicio.
-La arquitectura basada en microservicios está alineada con la Arquitectura Dirigida por Eventos y Arquitectura Orientada a Servicios, donde las aplicaciones complejas están compuestas por pequeños procesos que se comunican entre si por medio de APIs.
-Los microservicios se desarrollan en un lenguaje moderno y el más adecuado para cada servicio. Permite elegir hardware para cada servicio.
+Los guijarros representan la totalidad de la roca. Además son faciles de seleccionar y agrupar en base al color, tamaño y forma.
+
+Los _microservicios_ pueden ser desplegados individualmente en servidores separados provistos con los recuros necesarios para cada servicio.
+
+> La arquitectura basada en _microservicios_ está alineada con la _Arquitectura Dirigida por Eventos_ y _Arquitectura Orientada a Servicios_, donde las aplicaciones complejas están compuestas por pequeños procesos que se comunican entre si por medio de _APIs_. Los _microservicios_ se desarrollan en un lenguaje moderno y el más adecuado para cada servicio. Permite elegir el hardware para cada servicio.
 La naturaleza distribuida de los servicios añade complejidad a la arquitectura, pero añade beneficios en cuanto a la escalabilidad, además de no tener inactividad.
 
 
 ### 1.3. Refactoring
-Una aplicación multiproceso (monolito), no puede funcionar como un microservicio. Por lo tanto, se necesita refactorizar (Big-Bang ó refactorización incremental):
+Una aplicación multiproceso _(monolito)_, no puede funcionar como un _microservicio_. Por lo tanto, se necesita __refactorizar__ (Big-Bang ó refactorización incremental):
 * __Big-bang:__                    
-Bloquea el desarrollo y nuevas características para centrarse en la refactorización.
+Bloquea el desarrollo y nuevas características para centrarse en la __refactorización__.
 * __Refactorización incremental:__ 
-Permite que se desarrollen nuevas características y se apliquen como microservicios modernos que puedan comunicarse con la API. 
-Mientras tantos las características actuales del monolito se refactorizaran, y este irá desapareciendo.
+Permite que se desarrollen nuevas características y se apliquen como _microservicios_ modernos que puedan comunicarse con la _API_. 
+Mientras tantos las características actuales del monolito se _refactorizaran_, y este irá desapareciendo.
 
 
 ### 1.4. Challenges
 Para algunas aplicaciones, puede ser más económico reconstruirlas que refactorizarlas.
-Las aplicaciones estrechamente unidas a bases de datos, son candidatas poco válidas para la refactorización.
+Las aplicaciones muy unidas a BBDD, son candidatas poco válidas para la _refactorización_.
 
 Una vez que el monolito ha sobrevivido a la refactorización, el siguiente reto es diseñar mecanismos o encontrar herramientas adecuadas para mantener vivos todos los módulos desacoplados.
+
 Si se despliegan muchos módulos en un solo servidor, lo más probable es que las diferentes librerias y el entorno del runtime, puedan entrar en conflicto. 
+
 Esto obliga a separar modulos por servidor, y no es una forma económica de gestión de recursos. 
 Entonces aparecieron los contenedores, que proporcionan entornos encapsulados. 
-El amplio soporte de los contenedores aseguró la portabilidad  de las aplicaciones del bare-metal a las máquinas virtuales, pero esta vez con múltiples aplicaciones desplegadas en el mismo servidor.
+El amplio soporte de los contenedores aseguró la portabilidad de las aplicaciones del bare-metal a las máquinas virtuales, pero esta vez con múltiples aplicaciones desplegadas en el mismo servidor.
 
 
 
@@ -71,7 +77,7 @@ El amplio soporte de los contenedores aseguró la portabilidad  de las aplicacio
 ## 2. Container Orchestration
 ### 2.1. What Are Containers?
 * __Contenedores:__ 
-Son aplicaciones que ofrecen alto rendimiento y escalabilidad. Son los más adecuados para ofrecer microservicios, ya que proporcionan entornos virtuales portatiles y aislados.
+Son aplicaciones que ofrecen alto rendimiento y escalabilidad. Son los más adecuados para ofrecer _microservicios_, ya que proporcionan entornos virtuales portatiles y aislados.
 
 ![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/2.1_Containers.png)
 
@@ -88,11 +94,11 @@ En los entornos de desarrollo la ejecución de contenedores en un solo host, pue
 * Tolerancia a fallos.
 * Escalabildiad a petición.
 * Uso óptimo de los recursos.
-* Autodescubrimiento para la comunicación entre si.
+* Auto-discovery para la comunicación entre si.
 * Accesibilidad desde el exterior.
 * Actualizaciones y rollbacks sin downtime.
 
-Los orquestadores de contenedores es una herramienta que permite automatizar los despliegues y la gestión de contenedores, al mismo tiempo que cumple con los requisitos anteriores. 
+> Los orquestadores de contenedores es una herramienta que permite automatizar los despliegues y la gestión de contenedores, al mismo tiempo que cumple con los requisitos anteriores. 
 
 
 ### 2.3. Container Orchestrators
@@ -105,9 +111,7 @@ Algunos orquestadores:
 
 
 ### 2.4. Why Use Container Orchestrators?
-Aunque podemos mantener manualmente un par de contenedores, los orquestadores facilitan mucho las tareas.
-
-La mayoría de contenedores pueden:
+Aunque podemos mantener manualmente un par de contenedores, los orquestadores facilitan mucho las tareas, permite:
 * Agrupar host mientras se crear un cluster.
 * Programar contenedores para que corran en cluster en funcion de la disponibilidad de los recursos.
 * Permite que los contenedores de cluster se comuniquen entre si.
@@ -125,16 +129,16 @@ Los orquestadores pueden ser desplegados en bare-metal, máquinas virtuales, on-
 ### 3.1. What Is Kubernetes?
 Kubernetes es un sistema de código abierto (OpenSource) para automatizar el despliegue, el escalado y la gestión de aplicaciones en contenedores.
 
-Viene del griego, que significa timonel. También se le conoce como k8s.
-Se inspira mucho en el sistema de __Google Borg__, un orquestador de contenedores escrito en Go.
+Viene del griego, que significa _timonel_. También se le conoce como k8s.
+Se inspira mucho en el sistema de __Google Borg__, un orquestador de contenedores escrito en _Go_.
 Kubernetes fue iniciado por Google, y con el lanzamiento de la v1 en 2015, fue donado a CNCF.
 
 ### 3.2. From Borg to Kubernetes
-El sistema de Borg de Google, es un administrador de Clusteres que ejecuta cientos de miles de trabajos, de muchos miles de aplicaciones diferentes, a través de varios clusteres, cada uno con decenas de miles de máquinas.
+El sistema de _Borg_ de Google, es un administrador de clusteres que ejecuta cientos de miles de trabajos, de muchos miles de aplicaciones diferentes, a través de varios clusteres, cada uno con decenas de miles de máquinas.
 
-Durante más de una década, Borg ha sido el secreto de Google, gestionando servicios como Gmail, Drive, Maps, etc.
+Durante más de una década, _Borg_ ha sido el secreto de Google, gestionando servicios como Gmail, Drive, Maps, etc.
 
-Algunas características de kubernetes  heredadas de Borg son:
+Algunas características heredadas de Borg:
 * __API Servers__
 * __Pods__
 * __IP-per-Pod__
@@ -147,7 +151,7 @@ Kubernetes ofrece un conjunto de características para la orquestación:
 * __Automatic bin packing:__
 Programan en base a los recuros necesarios y limitaciones, para maximizar su utilización sin sacrificar la disponibilidad.
 * __Self-healing:__
-Reemplaza y reprograma automáticamente los contenedores de los __Nodes__ que fallan. Mata y reinicia los contenedores que no responden a los HealthCheck. También, envita que se dirija el tráfico a contenedores que no responden.
+Reemplaza y reprograma automáticamente los contenedores de los __Nodes__ que fallan. Mata y reinicia los contenedores que no responden a los HealthCheck. También, evita que se dirija el tráfico a contenedores que no responden.
 * __Horizontal scaling:__
 se escalan manual o automáticamente las aplicaciones, en base a métricas.
 * __Service discovery and Load Balancing:__
@@ -158,18 +162,18 @@ Los contenedores reciben sus propias direcciones IPs, mientras que se asigna un 
 * __Automated rollouts and rollbacks:__
 Despliegan y realizan __rollback__ sin problema en base a las actualizaciones de la aplicación y los cambios de configuración, supervisando constantemente la salud de la aplicación, evitando así inactividad.
 * __Secret and configuration management:__
-Gestiona los __secrets__ y detalles de la configuración de una aplicación por separado de la imagen del contenedor, con el fin de evitar la reconsctrucción de la imagen respectiva. Los __secrets__ consisten en información confidencial que se le pasa a la aplicación sin revelar el contenido, como en GitHub.
+Gestiona los __secrets__ y detalles de la configuración de una aplicación por separado de la imagen del contenedor, con el fin de evitar la reconstrucción de la imagen respectiva. Los __secrets__ son información confidencial que se le pasa a la aplicación sin revelar el contenido, como en GitHub.
 * __Storage orchestration:__
-Montan automáticamente soluciones de __storage__ definidas por software en contenedores de almacenamiento local, proveedores de nube externos o sistemas de almacenamiento en red.
+Montan automáticamente soluciones de _Storage_ definidas por software en contenedores de almacenamiento local, proveedores de nube externos o sistemas de almacenamiento en red.
 * __Batch execution:__
 Apoya la ejecución por lotes, los trabajos de larga duración y reemplaza los contenedores que fallan.
 
-Muchas otras características están por llegar aunque se encuentran en base beta. Otras, ya están estabales y aportan grandes beneficios como el control de acceso basado en roles (RBAC), estable desde la 1.8.
+> Muchas otras características están por llegar aunque se encuentran en base beta. Otras, ya están estables y aportan grandes beneficios como el control de acceso basado en roles _(RBAC)_, estable desde la 1.8.
 
 
 ### 3.5. Why Use Kubernetes?
 K8s es portatil y extensible. La arquitectura de k8s es modular y enchufable. 
-No solo orquesta aplicaciones de tipo microservicio desacoplado, si no que su arquitectura sigue patrones de los microservicios desacoplados. 
+No solo orquesta aplicaciones de tipo microservicio desacoplado, si no que su arquitectura sigue patrones de microservicios desacoplados. 
 Pueden escribirse recursos personalizados, operadores APIs, reglas de programación o plugins.
 
 
@@ -226,12 +230,11 @@ Para k8s, CNCF:
 ### 4.1. Kubernetes Architecture
 A un nivel muy alto, kubernetes cuenta con los siguientes componentes principales:
 
-![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/4.1_KubernetesArchitecture.png)
-
 * Uno o más __Master Nodes__.
 * Uno o más __Worder Nodes__.
 * Base de datos distribuida, key-value, __etcd__.
 
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/4.1_KubernetesArchitecture.png)
 
 ### 4.2. Master Node
 El __Master Node__, proporciona un entorno de ejecución, es el reponsable de gestionar el estado del cluster de k8s, y es el cerebro detrás de todas las operaciones.
@@ -241,7 +244,7 @@ Para comunicarse con el cluster, los usuarios envian solicitudes al __Master Nod
 
 El plano de control mantiene un registro de todos los objectos de k8s en el sistema, y ejecuta bucles de control continuos para gestionar el estado de esos objetos.
 Es importante mantener el plano de control. Perder el plano de control puede introducir tiempos de inactividad, causando la interrumpción del servicio a los clientes. 
-Para asegurar tolerancia a fallos, se añaden réplicas del __Master Node__ al cluster, configurandolo así, en modo HA.
+Para asegurar tolerancia a fallos, se añaden réplicas del __Master Node__ al cluster, configurandolo en modo HA.
 Solo uno de los __Master Node__ administra activamente el cluster, el resto de componentes permanencen sincronizados con el resto de __Master Replicas__. 
 
 Para mantener el estado del cluster de k8s, todos los datos de la configuración del cluster se guardan en __etcd__. 
@@ -262,7 +265,7 @@ Un __Master Node__ tiene los siguientes componentes:
 * Intercepta las llamadas RESTfull de los usuarios, operadores y agentes externos, las valida y las procesa. 
 * Durante el procesamiento, lee el estado del cluster desde __etcd__, y despues de la llamada, el estado resultante del cluster de k8s se guarda en __etcd__.
 * __API Server__, es el único componente que habla con __etcd__, tanto para leer como para escribir, actuando como una interferfaz de intermediario.
-* Es configurable, también admite la adición de API Servers personalizados, cuando el API Server primario se convierte en un proxy de todos los servidores API.
+* Es configurable, también admite la adición de __API Servers__ personalizados, cuando el __API Server__ primario se convierte en un proxy de todos los API servers.
 
 
 ### 4.5. Master Node Components: Scheduler
@@ -280,7 +283,7 @@ Es altamente configurable, si se añaden más __Schedulers__, es necesario indic
 
 ### 4.6. Master Node Components: Controller Managers
 Son componentes del plano de control en el __Master Node__ que regulan el estado del cluster. 
-Son bucles de vigilancia que se ejecutan continuamente y comparan el estado deseado del cluster (proporcionado por los nuevos objectos) con el estado actual (proporcionado de etcd a traves de __API Server)__.
+Son bucles de vigilancia que se ejecutan continuamente y comparan el estado deseado del cluster (proporcionado por los nuevos objectos) con el estado actual (proporcionado de etcd a traves de __(API Server)__.
 En caso de desajuste, se toman medidas correctivas para hacer coincidir con el estado deseado.
 
 Los __Controller Managers__, son los encargados de actuar cuando los __Nodes__ no están disponibles, garantizar que el número de __Pods__ son el esperado, de crear __Endpoints__, __Service Accounts__, y __API access tokens__.
@@ -298,14 +301,14 @@ La herramienta de gestión (CLI) de __etcd__ proporciona capacidades de copias d
 
 > Para los entornos productivos, es importante replicarlos en HA.
 
-Algunas herramientas de arranque de clusters de k8s, por defecto, aprovisionan __Master Nodes__ de etcd aplilados, en los que __etcd__ se ejecuta junto a los demás componentes del __Master Node__ y comparte recursos con ellos. 
+Algunas herramientas de arranque de clusters de k8s, por defecto, aprovisionan __Master Nodes__ de __etcd__ aplilados, en los que __etcd__ se ejecuta junto a los demás componentes del __Master Node__ y comparte recursos con ellos. 
 Puede aislarse el __etcd__ en un host separado, reduciendo así posibilidades de fallo. 
 Tanto las configuraciónes en el mismo host o en otro, adminten configuración en HA.
 
 ![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/4.7_MasterandFollowers.png)
 
 > etcd está escrito en Go.
-Además de almacenar el estado del cluster, también se almacenan detalles de configuración como subredes, ConfigMaps, secrets, etc.
+Además de almacenar el estado del cluster, también se almacenan detalles de configuración como subredes, __ConfigMaps__, __secrets__, etc.
 
 
 ### 4.8. Worker Node
@@ -330,6 +333,7 @@ Un __Worker Node__, cuenta con los siguientes componentes:
 ### 4.10. Worker Node Components: Container Runtime
 Aunque k8s es un motor de orquestación de contenedores, no tiene la capacidad de manejar directamente los contenedores. 
 Para ejecutar y gestionar el ciclo de vida de un contenedor, se requiere de un __runtime__ en el __Node__ en el que se va a programar un __Pod__ y sus contendores. 
+
 k8s soporta:
 * __Docker__: utiliza como runtime, containerd, es el más utilizado con k8s.
 * __CRI-O__: contenedor ligero para k8s, soporta registros de imagenes Docker.
@@ -354,8 +358,7 @@ __CRI__ implementa dos servicios: __ImageService__ y __RuntimeService__:
 * __ImageService__ es responsable de todas las operaciones relacionadas con la imagen.
 * __RuntimeService__ es responsable de todas las operaciones relacionadas con el __Pod__ y el contenedor.
 
-> Los __runtime__ de los contenedores solían estar codificados en duro en Kubernetes, pero con el desarrollo de CRI, Kubernetes es más flexible ahora y utiliza diferentes __runtimes__ de los contenedores sin necesidad de recompilar. 
-Cualquier __runtime__ de contenedor que implemente la CRI puede ser usado por Kubernetes para gestionar __Pods__, contenedores e imágenes de contenedores.
+> Los __runtime__ de los contenedores solían estar codificados en duro en Kubernetes, pero con el desarrollo de CRI, Kubernetes es más flexible ahora y utiliza diferentes __runtimes__ de los contenedores sin necesidad de recompilar. Cualquier __runtime__ de contenedor que implemente la CRI puede ser usado por Kubernetes para gestionar __Pods__, contenedores e imágenes de contenedores.
 
 
 ### 4.12. Worker Node Components: kubelet - CRI shims
@@ -384,20 +387,20 @@ Los __addons__ son características y funcionalidades de los clústeres que aún
 
 * __DNS__ - el clúster DNS es un servidor DNS necesario para asignar los registros DNS a los objetos y recursos de Kubernetes.
 * __Dashboard__ - una interfaz de usuario de propósito general basada en la web para la gestión de clústeres.
-* __Monitoreo__ - recopila las métricas de los contenedores a nivel de clúster y las guarda en un almacén central de datos.
-* __Registro__ - recoge los registros de los contenedores a nivel de grupo y los guarda en un almacén central de registros para su análisis.
+* __Monitoring__ - recopila las métricas de los contenedores a nivel de clúster y las guarda en un almacén central de datos.
+* __Logging__ - recoge los logs de los contenedores a nivel de cluster y los guarda en un almacenamiento central de logs para su análisis.
 
 
 ### 4.15. Networking Challenges
 Las aplicaciones basadas en microservicios desacoplados dependen en gran medida de la conexión en red para imitar el estrecho acoplamiento que una vez estuvo disponible en la era monolítica. 
 La conexión en red, en general, no es la más fácil de entender e implementar. Kubernetes no es una excepción - como un orquestador de microservicios en contenedores es necesario abordar 4 desafíos de red distintos:
 
-* Comunicación de contenedor a contenedor dentro de los __Pods__.
-* La comunicación de __Pod a Pod__ en el mismo __Node__ y a través de otros __Nodes__ de otros clusters.
-* La comunicación de __Pod a Servicio__ dentro del mismo __namespaces__ y a través de los __namespaces__ de los clústeres.
-* Comunicación externa al servicio para que los clientes accedan a las aplicaciones de un cluster.
+* __Container-to-Container:__ Comunicación dentro de los __Pods__.
+* __Pod-to-Pod:__ en el mismo __Node__ y a través de otros __Nodes__ de otros clusters.
+* __Pod-to-Service:__ dentro del mismo __Namespaces__ y a través de los __Namespaces__ de los clústeres.
+* __External-to-Service:__ para que los clientes accedan a las aplicaciones de un cluster.
 
-Todos estos desafíos de red deben ser abordados antes de desplegar un cluster de Kubernetes.
+> Todos estos desafíos de red deben ser abordados antes de desplegar un cluster de Kubernetes.
 
 
 ### 4.16. Container-to-Container Communication Inside Pods
@@ -413,11 +416,12 @@ Independientemente de su __Node__ anfitrión, se espera que los __Pods__ puedan 
 Este es un requisito fundamental de cualquier implementación de red en los kubernetes.
 
 El modelo de red de los Kubernetes tiene como objetivo reducir la complejidad, y trata a los __Pods__ como máquinas virtuales en una red, en la que cada máquina virtual recibe una dirección IP, por lo que cada __Pod__ recibe una dirección IP. 
-Este modelo se denomina __"IP por PC"__ y garantiza la comunicación entre los __Pods__, al igual que las máquinas virtuales pueden comunicarse entre sí.
+Este modelo se denomina __"IP-per-Pod"__ y garantiza la comunicación entre los __Pods__.
 
-Sin embargo, no nos olvidemos de los contenedores. Comparten el espacio de nombres de la red del __Pod__ y deben coordinar la asignación de puertos dentro del __Pod__ como lo harían las aplicaciones en una VM, todo ello mientras pueden comunicarse entre sí en el host local - dentro del __Pod__. 
+Los contenedores comparten el __network namespace__ del __Pod__ y deben coordinar la asignación de puertos dentro del __Pod__ como lo harían las aplicaciones en una VM, todo ello mientras pueden comunicarse entre sí en el host local - dentro del __Pod__. 
 Sin embargo, los contenedores se integran con el modelo general de red de Kubernetes mediante el uso de la Interfaz de Red de Contenedores __(CNI)__ soportada por los plugins CNI. 
 La __CNI__ es un conjunto de especificaciones y librerías que permiten a los plugins configurar la red de contenedores. 
+
 Aunque hay unos pocos plugins de kernel, la mayoría de los plugins CNI son soluciones de red definidas por software (SDN) de terceros que implementan el modelo de red de Kubernetes. 
 Además de abordar el requisito fundamental del modelo de red, algunas soluciones de red ofrecen soporte para las políticas de red. 
 __Flannel__, Weave, __Calico__ son sólo algunas de las soluciones SDN disponibles para los clusters de Kubernetes.
@@ -433,29 +437,25 @@ Kubernetes permite la accesibilidad externa a través de __services__, construcc
 Al exponer los __services__ al mundo externo con __kube-proxy__, las aplicaciones se hacen accesibles desde fuera del cluster a través de una IP virtual.
 
 
-DUDAS:
-* Plano de control, que es exactamente?
-* etcd y hosts externos
 
 ## Chapter 5. Installing Kubernetes<a name="chapter5"></a>
 ## 5. Installing Kubernetes
 ## 5.1. Kubernetes Configuration
-Los kubernetes pueden ser instalados usando diferentes configuraciones. 
-A continuación se presentan brevemente los cuatro tipos principales de instalación:
+Los kubernetes pueden ser instalados usando diferentes configuraciones:
 
-* __Instalación de un Single-Node todo en uno:__
+* __All-in-One Single-Node Installation:__
 En esta configuración, todos los componentes maestros y trabajadores están instalados y funcionando en un solo __Node__. 
 Aunque es útil para el aprendizaje, desarrollo y pruebas, no debe utilizarse en la producción. 
 __Minikube__ es un ejemplo de ello.
 
-* __Instalación de un Single-Node, etc., de un solo Master Node y de varios Worker Node:__
+* __Single-Node etcd, Single-Master and Multi-Worker Installation:__
 En esta configuración, tenemos un __Master Node__ único, que también ejecuta una instancia de un solo __Node etcd__. 
 Múltiples __Workers Nodes__ están conectados al __Master Node__.
 
-* __Instalación de un Single-Node etcd, multi-Master y multi-Worker:__
+* __Single-Node etcd, Multi-Master and Multi-Worker Installation:__
 En esta configuración, tenemos __Multi-Master Nodes__ configurados en modo HA, pero tenemos una instancia de un solo __Node etcd__. __Multi-Worker Nodes__ están conectados a los __Master Nodes__.
 
-* __Instalación de Multi-Node etcd, Multi-Master y Multi-Worker:__
+* __Multi-Node etcd, Multi-Master and Multi-Worker Installation:__
 En este modo, __etcd__ está configurado en modo HA agrupado, los __Master Nodes__ están todos configurados en modo HA, conectando a __Multi-Worker Nodes__. 
 
 > __Esta es la configuración de producción más avanzada y recomendada.__
@@ -464,7 +464,7 @@ En este modo, __etcd__ está configurado en modo HA agrupado, los __Master Nodes
 ## 5.2. Infrastructure for Kubernetes Installation
 Una vez que decidimos el tipo de instalación, también tenemos que tomar algunas decisiones relacionadas con la infraestructura:
 
-* ¿Debemos establecer los k8s en metal desnudo, nube pública o nube privada?
+* ¿Debemos establecer los k8s en bare-metal, nube pública o nube privada?
 * ¿Qué sistema operativo subyacente deberíamos utilizar? ¿Deberíamos elegir RHEL, CoreOS, CentOS, u otra cosa?
 * ¿Qué solución de red deberíamos utilizar?
 * Y así sucesivamente.
@@ -481,34 +481,34 @@ Estas son sólo algunas de las opciones de instalación del host local disponibl
 
 
 ## 5.4. On-Premise Installation
-Los kubernetes pueden instalarse en las máquinas virtuales y en el metal desnudo.
+Los kubernetes pueden instalarse en las máquinas virtuales y en el bare-metal.
 
-* __VMs en las instalaciones:__
+* __On-Premise VMs:__
 Los kubernetes pueden instalarse en las máquinas virtuales creadas a través de Vagrant, VMware vSphere, KVM u otra herramienta de gestión de la configuración (CM) junto con un software de hipervisor. Hay diferentes herramientas disponibles para automatizar la instalación, como __Ansible__ o __kubeadm__.
-* __Bare Metal en las instalaciones:__
+
+* __On-Premise Bare Metal:__
 Los kubernetes pueden ser instalados en bare-metal, en RHEL, CoreOS, CentOS, Fedora, Ubuntu, etc.
 
 
 ## 5.5. Cloud Installation
 kubernetes pueden ser instalados y administrados en casi cualquier entorno de nube:
 
-* __Soluciones alojadas:__
+* __Hosted Solutions:__
 Algunos de los proveedores que ofrecen soluciones alojadas para Kubernetes son:
-    * Motor de Kubernetes de Google (GKE).
-    * Servicio de Kubernetes Azules (AKS).
-    * Servicio de Contenedores Elásticos del Amazonas para Kubernetes (EKS).
+    * Google Kubernetes Engine (GKE)
+    * Azure Kubernetes Service (AKS)
+    * Amazon Elastic Container Service for Kubernetes (EKS)
     * DigitalOcean Kubernetes.
-    * OpenShift Dedicado.
-    * Plataforma9.
+    * OpenShift Dedicated
+    * Platform9
     * IBM Cloud Kubernetes Service.
 
-* __Soluciones Turnkey:__
-Kubernetes gestionado, como por ejemplo:
-    * Motor de Computación de Google (GCE).
-    * Amazon AWS (AWS EC2).
+* __Turnkey Cloud Solutions:__
+    * Google Compute Engine (GCE)
+    * Amazon AWS (AWS EC2)
     * Microsoft Azure (AKS).
 
-* __Soluciones "llave en mano" en las instalaciones:__
+* __Turnkey On-Premise Solutions:__
 Las Soluciones On-Premise instalan Kubernetes en nubes privadas internas seguras con sólo unos pocos comandos:
     * GKE On-Prem de Google Cloud.
     * IBM Cloud Private.
@@ -522,7 +522,7 @@ Algunas herramientas/recursos útiles disponibles:
 Es una forma segura y recomendada de arrancar un cluster de Kubernetes de __Single-Node__ o __Multi-Node__.
 
 * __kubespray:__
-(antes conocido como __kargo__), podemos instalar clusters de Kubernetes en HA en AWS, GCE, Azure, OpenStack, o bare-metal. Está basado en __Ansible__, y está disponible en la mayoría de las distribuciones de Linux.
+(antes conocido como _kargo_), podemos instalar clusters de Kubernetes en HA en AWS, GCE, Azure, OpenStack, o bare-metal. Está basado en _Ansible_, y está disponible en la mayoría de las distribuciones de Linux.
 
 * __kops:__
 Podemos crear, destruir, actualizar y mantener clusters de Kubernetes de producción y HA desde la línea de mando. También puede aprovisionar las máquinas. Actualmente, AWS está oficialmente respaldada. La compatibilidad con GCE está en fase beta, y VMware vSphere en fase alfa, y otras plataformas están previstas para el futuro.
@@ -564,51 +564,45 @@ Se puede acceder a cualquier grupo de Kubernetes que funcione bien a través de 
 * Interfaz de usuario basada en la web (Web UI) desde un navegador web.
 * APIs de CLI o programáticamente.
 
-Estos métodos son aplicables a todos los grupos de Kubernetes. 
-
 
 ## 7.2. Accessing Minikube: Command Line Interface (CLI)
 __kubectl__ es el cliente de la Interfaz de Línea de Comando (CLI) de Kubernetes para gestionar los recursos y aplicaciones del cluster. Puede utilizarse de forma autónoma o como parte de scripts y herramientas de automatización. Una vez que se han configurado todas las credenciales y puntos de acceso al clúster necesarios para kubectl, se puede utilizar de forma remota desde cualquier lugar para acceder a un clúster. 
 
-En capítulos posteriores, utilizaremos kubectl para desplegar aplicaciones, gestionar y configurar los recursos de Kubernetes.
-
 
 ## 7.3. Accessing Minikube: Web-based User Interface (Web UI)
-El Dashboard de Kubernetes proporciona una Interfaz de Usuario basada en la Web (Web UI) para interactuar con un grupo de Kubernetes para gestionar recursos y aplicaciones en contenedores. En uno de los últimos capítulos, la utilizaremos para desplegar una aplicación en contenedor.
+El Dashboard de Kubernetes proporciona una Interfaz de Usuario basada en la Web (Web UI) para interactuar con un cluster de Kubernetes para gestionar recursos y aplicaciones en contenedores.
 
 
 ## 7.4. Accessing Minikube: APIs
-Como sabemos, Kubernetes tiene el servidor API, y los operadores/usuarios se conectan a él desde el mundo externo para interactuar con el cluster. Usando tanto la CLI como la Web UI, podemos conectarnos al servidor API que se ejecuta en el nodo maestro para realizar diferentes operaciones. Podemos conectarnos directamente al servidor de la API utilizando sus puntos finales de la API y enviarle comandos, siempre y cuando podamos acceder al nodo maestro y tengamos las credenciales adecuadas.
+Como sabemos, Kubernetes tiene el __API Server__, y los operadores/usuarios se conectan a él desde el mundo externo para interactuar con el cluster. Usando tanto la CLI como la Web UI, podemos conectarnos al __API Server__ que se ejecuta en el Master Node para realizar diferentes operaciones. Podemos conectarnos directamente al API Server utilizando sus endpoints y enviarle comandos, siempre y cuando podamos acceder al Master Node y tengamos las credenciales adecuadas.
 
-A continuación, podemos ver una parte del espacio de la API HTTP de Kubernetes:
+A continuación, podemos ver una parte de la API HTTP de Kubernetes:
 
 ![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/7.3_HTTPAPISpaceofKubernetes.png)
 
-El espacio de la API HTTP de los gobernantes se puede dividir en tres grupos independientes:
+La API HTTP de kubernetes se puede dividir en tres grupos independientes:
 
-* Grupo central (/api/v1)
-Este grupo incluye objetos como Pods, Servicios, nodos, espacios de nombres, configmaps, secretos, etc.
+* __Core Group (/api/v1)__
+Este grupo incluye objetos como __Pods__, __Service__, __Nodes__, __Namespace__, __ConfigMaps__, __Secrets__, etc.
 
-* Grupo de nombres
-Este grupo incluye objetos en formato /apis/$NAME/$VERSION. Estas diferentes versiones de la API implican diferentes niveles de estabilidad y soporte:
-Nivel Alfa - puede ser eliminado en cualquier momento, sin previo aviso. Por ejemplo, /apis/batch/v2alpha1.
-Nivel Beta - está bien probado, pero la semántica de los objetos puede cambiar de forma incompatible en una posterior versión beta o estable. Por ejemplo, /apis/certificados.k8s.io/v1beta1.
-Nivel estable - aparece en el software publicado para muchas versiones posteriores. Por ejemplo, /apis/networking.k8s.io/v1.
+* __Named Group__
+Este grupo incluye objetos en formato _/apis/$NAME/$VERSION_. Estas diferentes versiones de la API implican diferentes niveles de estabilidad y soporte:
+    * _Alpha level_ - puede ser eliminado en cualquier momento, sin previo aviso. Por ejemplo, _/apis/batch/v2alpha1_.
+    * _Beta level_ - está bien probado, pero la semántica de los objetos puede cambiar de forma incompatible en una posterior versión beta o estable. Por ejemplo, _/apis/certificados.k8s.io/v1beta1_.
+    * _Stable level_ - aparece en el software publicado para muchas versiones posteriores. Por ejemplo, _/apis/networking.k8s.io/v1_.
 
-* A nivel de todo el sistema
-Este grupo consiste en puntos finales de la API de todo el sistema, como /healthz, /logs, /metrics, /ui, etc.
-Podemos conectarnos a un servidor de la API directamente llamando a los respectivos puntos finales de la API o a través del CLI/Web UI.
-
-A continuación veremos cómo podemos acceder al entorno de Minikube que hemos configurado en el capítulo anterior.
+* __System-wide__
+Este grupo consiste en API Endpoints de todo el sistema, como _/healthz_, _/logs_, _/metrics_, _/ui_, etc.
+Podemos conectarnos a un API Server directamente llamando a los respectivos API Endpoint o a través del CLI/Web UI.
 
 
 ## 7.5. kubectl
-__kubectl__ se instala generalmente antes de instalar el Minikube, pero también podemos instalarlo después. Una vez instalado, kubectl recibe su configuración automáticamente para el acceso al cluster de Kubernetes de Minikube. Sin embargo, en otras configuraciones de clúster de Kubernetes, es posible que necesitemos configurar los puntos de acceso al clúster y los certificados requeridos por kubectl para acceder al clúster.
+__kubectl__ se instala generalmente antes de instalar el Minikube, pero también podemos instalarlo después. Una vez instalado, __kubectl__ recibe su configuración automáticamente para el acceso al cluster de Kubernetes de Minikube. Sin embargo, en otras configuraciones de clúster de Kubernetes, es posible que necesitemos configurar los puntos de acceso al clúster y los certificados requeridos por __kubectl__ para acceder al clúster.
 
-Existen diferentes métodos que pueden utilizarse para instalar kubectl, que se mencionan en la documentación de Kubernetes. Para obtener los mejores resultados, se recomienda mantener kubectl en la misma versión que los Kubernetes dirigidos por Minikube - en el momento en que se escribió el curso la última versión estable era la v1.14.1. A continuación, veremos algunos pasos para instalarlo en sistemas Linux, MacOS y Windows.
+Existen diferentes métodos que pueden utilizarse para instalar __kubectl__, que se mencionan en la documentación de Kubernetes. Para obtener los mejores resultados, se recomienda mantener __kubectl__ en la misma versión que los Kubernetes dirigidos por Minikube - en el momento en que se escribió el curso la última versión estable era la v1.14.1.
 
 ## 7.6. Installing kubectl on Linux
-Para instalar kubectl en Linux, siga las siguientes instrucciones:
+Para instalar __kubectl__ en Linux, siga las siguientes instrucciones:
 
 Descargue el último binario estable de kubectl, hágalo ejecutable y muévalo al PATH:
 
@@ -636,7 +630,7 @@ $ brew install kubernetes-cli
 
 
 ## 7.8. kubectl Configuration File
-Para acceder al clúster de Kubernetes, el cliente de kubectl necesita el punto final del nodo maestro y las credenciales adecuadas para poder interactuar con el servidor de la API que se ejecuta en el nodo maestro. Al iniciar Minikube, el proceso de inicio crea, por defecto, un archivo de configuración, config, dentro del directorio.kube (a menudo denominado archivo dot-kube-config), que reside en el directorio principal del usuario. El archivo de configuración tiene todos los detalles de conexión requeridos por kubectl. Por defecto, el binario de kubectl analiza este archivo para encontrar el punto final de conexión del nodo maestro, junto con las credenciales. Para ver los detalles de conexión, podemos ver el contenido del archivo ~/.kube/config (en Linux) o ejecutar el siguiente comando:
+Para acceder al clúster de Kubernetes, el cliente de __kubectl__ necesita el endpont del _Master Node_ y las credenciales adecuadas para poder interactuar con el _API Server_ que se ejecuta en el _Master Node_. Al iniciar Minikube, el proceso de inicio crea, por defecto, un archivo de configuración, _config_, dentro del directorio _.kube_ (a menudo denominado archivo _dot-kube-config_), que reside en el directorio principal del usuario. El archivo de configuración tiene todos los detalles de conexión requeridos por kubectl. Por defecto, el binario de kubectl analiza este archivo para encontrar el _endpoint_ de conexión del _Master Node_, junto con las credenciales.
 
 ```yaml
 $ kubectl config view
@@ -662,7 +656,7 @@ users:
 ``` 
 
 
-Una vez instalado kubectl, podemos obtener información sobre el clúster de Minikube con el comando kubectl cluster-info: 
+Una vez instalado _kubectl_, podemos obtener información sobre el clúster de Minikube con el comando _kubectl cluster-info_: 
 
 ```
 $ kubectl cluster-info
@@ -672,15 +666,11 @@ KubeDNS is running at https://192.168.99.100:8443//api/v1/namespaces/kube-system
 To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ``` 
 
-Para seguir depurando y diagnosticando los problemas de los racimos, usa el 'kubectl cluster-info dump'.
-
-Puedes encontrar más detalles sobre las opciones de la línea de comandos de kubectl aquí.
-
-Aunque para el clúster de Kubernetes instalado por Minikube el archivo ~/.kube/config se crea automáticamente, este no es el caso de los clústeres de Kubernetes instalados por otras herramientas. En otros casos, el archivo de configuración tiene que ser creado manualmente y a veces reconfigurado para adaptarse a varias configuraciones de red y de cliente/servidor.
+Aunque para el clúster de Kubernetes instalado por Minikube el archivo _~/.kube/config_ se crea automáticamente, este no es el caso de los clústeres de Kubernetes instalados por otras herramientas. En otros casos, el archivo de configuración tiene que ser creado manualmente y a veces reconfigurado para adaptarse a varias configuraciones de red y de cliente/servidor.
 
 
 ## 7.9. Kubernetes Dashboard
-Como se ha mencionado anteriormente, el Tablero de Kubernetes proporciona una interfaz de usuario basada en la web para la gestión del clúster de Kubernetes. Para acceder al Dashboard desde Minikube, podemos utilizar el comando minikube dashboard, que abre una nueva pestaña en nuestro navegador web, mostrando el Dashboard de los Kubernetes:
+El dashboard de Kubernetes proporciona una interfaz de usuario basada en la web para la gestión del clúster de Kubernetes. Para acceder al Dashboard desde Minikube, podemos utilizar el comando minikube dashboard, que abre una nueva pestaña en nuestro navegador web, mostrando el Dashboard de los Kubernetes:
 
 ``` 
 $ minikube dashboard
@@ -688,28 +678,23 @@ $ minikube dashboard
 
 ![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/7.9_KubernetesDashboard.png)
 
-NOTA: En caso de que el navegador no abra otra pestaña y no muestre el Tablero de Control como se esperaba, verifique la salida en su terminal ya que puede mostrar un enlace para el Tablero de Control (junto con algunos mensajes de error). Copie y pegue ese enlace en una nueva pestaña de su navegador. Dependiendo de las características de su terminal, es posible que sólo tenga que hacer clic o hacer clic con el botón derecho del ratón en el enlace para abrirlo directamente en el navegador. El enlace puede tener un aspecto similar:
 
 ```
 http://127.0.0.1:37751/api/v1/namespaces/kube-system/services/http:kubernetes-dashboard:/proxy/
 ```
 
-Lo más probable es que la única diferencia sea el número del PUERTO, que arriba es 37751. Su número de puerto puede ser diferente.
-
-Después de un cierre de sesión/login o un reinicio de su estación de trabajo, el comportamiento normal debe ser esperado (donde el comando minikube dashboard abre directamente una nueva pestaña en su navegador mostrando el Dashboard).
-
 
 ## 7.10. The 'kubectl proxy' Command
-Al emitir el comando proxy kubectl, kubectl se autentica con el servidor API en el nodo maestro y hace que el Dashboard esté disponible en una URL ligeramente diferente a la anterior, esta vez a través del puerto proxy 8001.
+_kubectl_ se autentica con el _API Server_ en el _Master Node_ y hace que el Dashboard esté disponible en una URL ligeramente diferente a la anterior, esta vez a través del puerto proxy 8001.
 
-Primero, emitimos el comando kubectl proxy:
+Primero, ejecutamos el comando _kubectl proxy_:
 
 ```
 $ kubectl proxy
 Starting to serve on 127.0.0.1:8001
 ```
 
-Bloquea la terminal mientras el proxy esté funcionando. Con el proxy ejecutándose podemos acceder al Dashboard a través de la nueva URL (sólo tienes que hacer clic en ella abajo - debería funcionar en tu estación de trabajo). Una vez que detenemos el proxy (con CTRL + C) el Dashboard ya no es accesible.
+Bloquea la terminal mientras el proxy esté funcionando. Con el proxy ejecutándose podemos acceder al Dashboard a través de la nueva URL..
 
 ```
 http://127.0.0.1:8001/api/v1/namespaces/kube-system/services/kubernetes-dashboard:/proxy/#!/overview?namespace=default 
@@ -719,7 +704,7 @@ http://127.0.0.1:8001/api/v1/namespaces/kube-system/services/kubernetes-dashboar
 
 
 ## 7.11. APIs - with 'kubectl proxy'
-Cuando se ejecuta el proxy de kubectl, podemos enviar solicitudes a la API a través del localhost en el puerto proxy 8001 (desde otra terminal, ya que el proxy bloquea la primera terminal):
+Cuando se ejecuta _kubectl proxy_, podemos enviar solicitudes a la API a través del localhost en el puerto proxy 8001 (desde otra terminal, ya que el proxy bloquea la primera terminal):
 
 ```json
 $ curl http://localhost:8001/
@@ -739,7 +724,7 @@ $ curl http://localhost:8001/
 }
 ```
 
-Con la solicitud de rizo anterior, solicitamos todos los puntos finales de la API al servidor de la API. Al hacer clic en el enlace anterior (en el comando curl), se abrirá la misma salida de listado en una pestaña del navegador.
+Con la anterior solicitud, obtenemos todos los edpoints del _API Server_. Al hacer clic en el enlace anterior (en el comando curl), se abrirá la misma salida de listado en una pestaña del navegador.
 
 Podemos explorar todas las combinaciones de rutas con curl o en un navegador, por ejemplo:
 
@@ -754,9 +739,9 @@ http://localhost:8001/metrics
 ```
 
 ## 7.12. APIs - without 'kubectl proxy'
-Cuando no se utiliza el proxy kubectl, es necesario autenticarse en el servidor de la API cuando se envían las solicitudes de la API. Podemos autenticarnos proporcionando un token portador al emitir un rizo, o proporcionando un conjunto de claves y certificados.
+Cuando no se utiliza el _kubectl proxy_, es necesario autenticarse en el _API Server_ cuando se envían las solicitudes de la API. Podemos autenticarnos proporcionando un token o un conjunto de claves y certificados.
 
-Un token portador es un token de acceso que es generado por el servidor de autenticación (el servidor de la API en el nodo maestro) y devuelto al cliente. Utilizando ese token, el cliente puede conectarse de nuevo al servidor de la API de Kubernetes sin necesidad de proporcionar más detalles de autenticación y, a continuación, acceder a los recursos.
+Un token de acceso es generado por el servidor de autenticación (el _API Server_ del _Master Node_) y devuelto al cliente. Utilizando ese token, el cliente puede conectarse de nuevo al _API Server_ de Kubernetes sin necesidad de proporcionar más detalles de autenticación y, a continuación, acceder a los recursos.
 
 Consigue el token:
 
@@ -768,8 +753,6 @@ Get the API server endpoint:
 ```
 $ APISERVER=$(kubectl config view | grep https | cut -f 2- -d ":" | tr -d " ")
 ```
-
-Confirm that the APISERVER stored the same IP as the Kubernetes master IP by issuing the following 2 commands and comparing their outputs:
 
 ```
 $ echo $APISERVER
@@ -799,7 +782,7 @@ $ curl $APISERVER --header "Authorization: Bearer $TOKEN" --insecure
 }
 ```
 
-En lugar del token de acceso, podemos extraer el certificado de cliente, la clave de cliente y los datos de la autoridad de certificación del archivo .kube/config. Una vez extraídos, se codifican y luego se pasan con un comando curl para la autenticación. El nuevo comando curl es similar a:
+En lugar del token de acceso, podemos extraer el certificado de cliente, la clave de cliente y los datos de la autoridad de certificación del archivo _.kube/config_. Una vez extraídos, se codifican y luego se pasan con un comando curl para la autenticación. El nuevo comando curl es similar a:
 
 ```
 $ curl $APISERVER --cert encoded-cert --key encoded-key --cacert encoded-ca
@@ -810,17 +793,17 @@ $ curl $APISERVER --cert encoded-cert --key encoded-key --cacert encoded-ca
 ## Chapter 8. Kubernetes Building Blocks<a name="chapter8"></a>
 ## 8. Kubernetes Building Blocks
 ## 8.1. Kubernetes Object Model
-Kubernetes tiene un modelo de objetos abundante, que representa diferentes entidades persistentes en el grupo de Kubernetes. Esas entidades describen:
+Kubernetes tiene un modelo de objetos abundante, que representa diferentes entidades persistentes en el cluster de Kubernetes::
 
 * Qué aplicaciones contenedoras estamos ejecutando y en qué __Node__.
 * Consumo de recursos de la aplicación
 * Diferentes políticas adjuntas a las aplicaciones, como políticas de reinicio/actualización, tolerancia a fallos, etc.
 
-Con cada objeto, declaramos nuestra sección __spec__. El sistema de Kubernetes gestiona la sección __status__ de los objetos, donde registra el estado real del objeto. En un momento dado, el Plano de Control de Kubernetes intenta hacer coincidir el estado real del objeto con el estado deseado del mismo.
+Con cada objeto, declaramos la sección __spec__. El sistema de Kubernetes gestiona la sección __status__ de los objetos, donde registra el estado real del objeto. En un momento dado, el Plano de Control de Kubernetes intenta hacer coincidir el estado real del objeto con el estado deseado del mismo.
 
-Algunos ejemplos de objetos son __Pods__, __ReplicaSets__, __Deployments__, __Namespaces__, etc.
+> Algunos ejemplos de objetos son __Pods__, __ReplicaSets__, __Deployments__, __Namespaces__, etc.
 
-Cuando se crea un objeto, la sección de datos de configuración del objeto que se encuentra debajo del campo __spec__ debe enviarse al API Server de Kubernetes. La sección __spec__ describe el estado deseado, junto con alguna información básica, como el nombre del objeto. La solicitud de la API para crear un objeto debe tener la sección __spec__, así como otros detalles. Aunque el __API Server__ acepta archivos de definición de objetos en formato JSON, la mayoría de las veces proporcionamos dichos archivos en formato YAML, que se convierten por __kubectl__ en una carga útil JSON y se envían al __API Server__.
+Cuando se crea un objeto, la sección de datos de configuración del objeto que se encuentra debajo del campo __spec__ debe enviarse al _API Server_ de Kubernetes. La sección __spec__ describe el estado deseado, junto con alguna información básica, como el nombre del objeto. La solicitud de la API para crear un objeto debe tener la sección __spec__, así como otros detalles. Aunque el __API Server__ acepta archivos de definición de objetos en formato JSON, la mayoría de las veces proporcionamos dichos archivos en formato YAML, que se convierten por __kubectl__ en una carga útil JSON y se envían al __API Server__.
 
 Ejemplo de un objecto en formato YAML:
 
@@ -849,10 +832,10 @@ spec:
 ```
 
 Analizando el código del objecto los campos son los siguientes:
-* El campo __apiVersion__ es el primer campo obligatorio, y especifica el API endpoint en el Api Server al que queremos conectarnos; debe coincidir con una versión existente para el tipo de objeto definido. 
-* El segundo campo obligatorio es __kind__, que especifica el tipo de objeto - en nuestro caso es __Deployment__, pero puede ser __Pod__, __Replicaset__, __Namespace__, __Service__, etc. 
-* El tercer campo requerido, __metadata__, contiene la información básica del objeto, como el __name__, __lables__, __namespace__, etc. Nuestro ejemplo muestra dos campos __spec__ (__spec__ y __spec.template.spec__). 
-* El cuarto campo __spec__, requerido, marca el comienzo del bloque que define el estado deseado del objeto __Deployment__. En nuestro ejemplo, queremos asegurarnos de que 3 __Pods__ están funcionando en un momento dado (__replicas__). Los __Pods__ se crean utilizando la __template__ de __Pods__ definida en __spec.template__. Un objeto anidado, como el __Pod__ que forma parte de un __Deployment__, retiene sus __metadata__ y su __spec__ y pierde la __apiVersión__ y el __kind__ - ambos son reemplazados por la __template__. En __spec.template.spec__, definimos el estado deseado del __Pod__. Nuestro __Pod__ crea un único contenedor que ejecuta la imagen __nginx:1.15.11__ del Docker Hub.
+* __apiVersion__ es el primer campo obligatorio, y especifica el _API endpoint_ en el _Api Server_ al que queremos conectarnos; debe coincidir con una versión existente para el tipo de objeto definido. 
+* __kind__, que especifica el tipo de objeto - en nuestro caso es __Deployment__, pero puede ser __Pod__, __Replicaset__, __Namespace__, __Service__, etc. 
+* __metadata__, contiene la información básica del objeto, como el __name__, __lables__, __namespace__, etc. Nuestro ejemplo muestra dos campos __spec__ (__spec__ y __spec.template.spec__). 
+* __spec__, requerido, marca el comienzo del bloque que define el estado deseado del objeto __Deployment__. En nuestro ejemplo, queremos asegurarnos de que 3 __Pods__ están funcionando en un momento dado (__replicas__). Los __Pods__ se crean utilizando la __template__ de __Pods__ definida en __spec.template__. Un objeto anidado, como el __Pod__ que forma parte de un __Deployment__, retiene sus __metadata__ y su __spec__ y pierde la __apiVersión__ y el __kind__ - ambos son reemplazados por la __template__. En __spec.template.spec__, definimos el estado deseado del __Pod__. Nuestro __Pod__ crea un único contenedor que ejecuta la imagen __nginx:1.15.11__ del Docker Hub.
 
 Una vez creado el objeto de despliegue, el sistema de Kubernetes adjunta el campo de __status__ al objeto.
 
@@ -866,7 +849,12 @@ Un __Pod__ es el objeto más pequeño y simple de los Kubernetes. Es la unidad d
 
 ![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/8.2_Pods.png)
 
-Los __Pods__ son efímeros por naturaleza y no tienen capacidad de auto-curarse a sí mismos. Por eso se usan con __controllers__ que se encargan de la replicación de los __Pods__, la tolerancia a los fallos, la autocuración, etc. Ejemplos de __controllers__ son: __Deployments__, __ReplicaSet__, __ReplicationController__, etc.
+Los __Pods__ son efímeros por naturaleza y no tienen capacidad de auto-curarse a sí mismos. Por eso se usan con __controllers__ que se encargan de la replicación de los __Pods__, la tolerancia a los fallos, la autocuración, etc. 
+
+Algunos ejemplos de __controllers__ son: 
+* __Deployments__
+* __ReplicaSet__
+* __ReplicationController__
 
 Ejemplo de un objeto __Pod__ en formato YAML:
 
@@ -885,11 +873,21 @@ spec:
     - containerPort: 80
 ```
 
-El campo __apiVersion__ debe especificar __v1__ para la definición del objeto __Pod__. El segundo campo obligatorio es el __kind__ que especifica el tipo de objeto __Pod__. El tercer campo requerido, __metadata__, contiene el __name__ y el __label__ del objeto. El cuarto campo requerido, __spec__, marca el comienzo del bloque que define el estado deseado del objeto __Pod__, también llamado __PodSpec__. Nuestro Pod crea un único contenedor que ejecuta la imagen __nginx:1.15.11__ de Docker Hub.
+Campos:
+* __apiVersion__ debe especificar __v1__ para la definición del objeto __Pod__. 
+* __kind__ que especifica el tipo de objeto __Pod__. 
+* __metadata__, contiene el __name__ y el __label__ del objeto. 
+* __spec__, marca el comienzo del bloque que define el estado deseado del objeto __Pod__, también llamado __PodSpec__. 
+
+> Nuestro Pod crea un único contenedor que ejecuta la imagen __nginx:1.15.11__ de Docker Hub.
 
 
 ## 8.3. Labels
-Las __Labels__ son pares de __clave-valor__ unidos a objetos kubernetes (por ejemplo, __Pods__, __ReplicaSet__). Las __labels__ se utilizan para organizar y seleccionar un subconjunto de objetos, según los requisitos establecidos. Muchos objetos pueden tener la misma o las mismas __labels__. Las __labels__ no proporcionan unicidad a los objetos. Los __controllers__ utilizan las __labels__ para agrupar lógicamente los objetos desacoplados, en lugar de utilizar los nombres o las identificaciones de los objetos.
+Las __Labels__ son pares de __key-value__ unidos a objetos kubernetes (por ejemplo, __Pods__, __ReplicaSet__). 
+
+* Las __labels__ se utilizan para organizar y seleccionar un subconjunto de objetos, según los requisitos establecidos. Muchos objetos pueden tener la misma o las mismas __labels__. 
+* Las __labels__ no proporcionan unicidad a los objetos. 
+* Los __controllers__ utilizan las __labels__ para agrupar lógicamente los objetos desacoplados, en lugar de utilizar los nombres o las identificaciones de los objetos.
 
 ![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/8.3_Labels.png)
 
@@ -900,7 +898,7 @@ En la imagen de arriba, hemos usado dos __Label__ keys: app y env. Basándonos e
 Los __controllers__ utilizan __Label Selectors__ para seleccionar un subconjunto de objetos. Kubernetes soporta dos tipos de __Selectors__:
 
 * __Equality-Based Selectors__ (basados en igualdad):
-Permiten filtrar los objetos en función de las key-value de las __Labels__. El emparejamiento se logra usando los operadores __=__, __==__ (iguales, usados indistintamente), o __!=__ (no iguales). Por ejemplo, con __env==dev__ o __env=dev__ estamos seleccionando los objetos en los que la clave __Label__ key-value, env-dev. 
+Permiten filtrar los objetos en función de las _key-value_ de las __Labels__. El emparejamiento se logra usando los operadores __=__, __==__ (iguales, usados indistintamente), o __!=__ (no iguales). Por ejemplo, con __env==dev__ o __env=dev__ estamos seleccionando los objetos en los que la clave __Label__ key-value, env-dev.
 * __Set-Based Selectors__ (basados en conjunto):
 Permiten filtrar los objetos en base a un conjunto de valores. Podemos utilizar los operadores __in__, __notin__ para __Label values__, y __exist/does not exist__ para __Label keys__. Por ejemplo, con __env in (dev,qa)__ seleccionamos objetos en los que __env__ esté como __dev o qa__; con __!app__ seleccionamos objetos sin Label key __app__.
 
@@ -908,7 +906,7 @@ Permiten filtrar los objetos en base a un conjunto de valores. Podemos utilizar 
 
 
 ## 8.5. ReplicationControllers
-Aunque ya no es un método recomendado, un __ReplicationController__ es un __controller__ que asegura que un número específico de __replicas__ de un __Pod__ esté funcionando en un momento dado. Generalmente, no desplegamos un __Pod__ de forma independiente, ya que no podría reiniciarse por sí mismo si se terminara por error. El método recomendado es utilizar algún tipo de contolador de replicación para crear y gestionar los __Pods__. 
+_Aunque ya no es un método recomendado_, un __ReplicationController__ es un __controller__ que asegura que un número específico de __replicas__ de un __Pod__ esté funcionando en un momento dado. Generalmente, no desplegamos un __Pod__ de forma independiente, ya que no podría reiniciarse por sí mismo si se terminara por error. El método recomendado es utilizar algún tipo de contolador de replicación para crear y gestionar los __Pods__. 
 
 El controlador por defecto es un __Deployment__ que configura un __ReplicaSet__ para gestionar el ciclo de vida de los __Pods__.
 
@@ -920,7 +918,7 @@ Un __ReplicaSet__ es la próxima generación de __ReplicationController__.
 
 Con la ayuda del __ReplicaSet__, podemos escalar el número de __Pods__ que ejecutan una imagen específica de la aplicación del contenedor. La escalada puede ser realizada manualmente o a través del uso de un __autoscaler__.
 
-A continuación, pueden ver una representación gráfica de un __ReplicaSet__, donde hemos establecido el número de __replicas__ a 3 para un __Pod__.
+Ejemplo de __ReplicaSet__, donde hemos establecido el número de __replicas__ a 3 para un __Pod__.
 
 ![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/8.6_ReplicaSet.png)
 
@@ -942,7 +940,9 @@ Los __ReplicaSets__ pueden ser usados independientemente como __controllers__ de
 
 
 ## 8.9. Deployments I
-Los __Deployments__ proporcionan actualizaciones declarativas de los __Pods__ y los __ReplicaSets__. El __DeploymentController__ es parte del administrador de controladores del __Master Node__, y asegura que el estado actual siempre coincida con el estado deseado. Permite actualizaciones y degradaciones de aplicaciones sin problemas a través de despliegues y retrocesos, y gestiona directamente sus __ReplicaSets__ para el escalado de las aplicaciones. 
+Los __Deployments__ proporcionan actualizaciones declarativas de los __Pods__ y los __ReplicaSets__. 
+
+El __DeploymentController__ es parte del administrador de controladores del __Master Node__, y asegura que el estado actual siempre coincida con el estado deseado. Permite actualizaciones y degradaciones de aplicaciones sin problemas a través de despliegues y rollbacks, y gestiona directamente sus __ReplicaSets__ para el escalado de las aplicaciones. 
 
 En el siguiente ejemplo, un nuevo __Deployment__ crea __ReplicaSet__ A que luego crea 3 __Pods__, con cada __Pods Template__ configurada para ejecutar una imagen de contenedor __nginx:1.7.9__. En este caso, el __ReplicaSet__ A se asocia con __nginx:1.7.9__ representando un estado del __Deployment__. Este estado particular se registra como la Revisión 1.
 
@@ -952,9 +952,9 @@ En el siguiente ejemplo, un nuevo __Deployment__ crea __ReplicaSet__ A que luego
 ## 8.10. Deployments II
 Ahora, en el __Deployment__, cambiamos la __Pdos Template__ y actualizamos la imagen del contenedor de __nginx:1.7.9__ a __nginx:1.9.1__. El __Deployment__ dispara un nuevo __ReplicaSet__ B para la nueva imagen del contenedor versionada 1.9.1 y esta asociación representa un nuevo estado registrado del __Deployment__, Revisión 2. Transicionará los dos __ReplicaSets__, desde el __ReplicaSet__ A con 3 __Pods__ versionados 1.7.9 al nuevo __ReplicaSet__ B con 3 nuevos __Pods__ versionados 1.9.1, o desde la Revisión 1 a la Revisión 2, es una actualización continua del __Deployment__. 
 
-Un rolling update se activa cuando actualizamos __Pods Template__ para un despliegue. Operaciones como escalar o etiquetar el despliegue no activan una rolling update, por lo tanto no cambian el número de revisión.
+Un _rolling update_ se activa cuando actualizamos __Pods Template__ para un despliegue. Operaciones como escalar o etiquetar el despliegue no activan una _rolling update_, por lo tanto no cambian el número de revisión.
 
-Una vez que se haya completado el rolling update, el __Deployment__ mostrará tanto las réplicas de los conjuntos A y B, donde A se escala a 0 __Pods__, y B se escala a 3 __Pods__. Así es como el __Deployment__ registra sus ajustes de configuración de estado previo, como Revisiones. 
+Una vez que se haya completado el _rolling update_, el __Deployment__ mostrará tanto las réplicas de los conjuntos A y B, donde A se escala a 0 __Pods__, y B se escala a 3 __Pods__. Así es como el __Deployment__ registra sus ajustes de configuración de estado previo, como Revisiones. 
 
 ![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/8.10_Deployment.png)
 
@@ -983,15 +983,17 @@ Generalmente, Kubernetes crea cuatro __Namespaces__ por defecto:
 * __kube-system:__
 Contiene los objetos creados por el sistema, principalmente los agentes del plano de control.
 * __kube-public:__
-Es un __namespace__ inseguro y legible por cualquiera, utilizado para la exposición de información pública no sensible sobre el cluster.
-* __kube-node-lease:__
-*******************************************************************
+Es un __namespace__
+inseguro y legible por cualquiera, utilizado para la exposición de información pública no sensible sobre el cluster.
+* __kube-node-lease:__ 
+* Es el namespace que tiene un registro de la salud de los nodos, interactua con kubelet.
+> En versiones anteriores se utilizaba NodeStatus para comprobar la vida de los mismos pero actualmente se realiza esa comprobación por medio de Node Lease, y este controlador es el asociado a ese namespace
 * __default:__
 Contiene los objetos y recursos creados por los administradores y desarrolladores.
 
-El último espacio de nombres es kube-node-lease, que contiene objetos de nodo de alquiler utilizados para los datos de los latidos del nodo. Sin embargo, una buena práctica es crear más espacios de nombres para virtualizar el grupo para los usuarios y los equipos de desarrollo.
+> Con las __Resource Quotas__, podemos dividir los recursos del clúster dentro de __Namespaces__.
 
-Con las __Resource Quotas__, podemos dividir los recursos del clúster dentro de __Namespaces__.
+
 
 ## Chapter 9. Authentication, Authorization, Admission Control<a name="chapter9"></a>
 ## 9. Authentication, Authorization, Admission Control
@@ -1004,69 +1006,68 @@ Cada solicitud de API que llega al __API Server__ tiene que pasar por tres etapa
 ## 9.1. Authentication, Authorization, and Admission Control - Overview
 Para acceder y administrar cualquier recurso u objeto de Kubernetes en el clúster, necesitamos acceder a un punto final de la API específico en el servidor de la API. Cada solicitud de acceso pasa por las tres etapas siguientes:
 
-* Authentication:
+* __Authentication__:
 Inicia la sesión de un usuario.
-* Authorization:
+* __Authorization__:
 Autoriza las solicitudes de API añadidas por el usuario conectado.
-* Admission Control:
+* __Admission Control__:
 Módulos de software que pueden modificar o rechazar las solicitudes en base a algunas comprobaciones adicionales, como una __Quota__ preestablecida. 
 
 La siguiente imagen muestra las etapas anteriores:
 
 ![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/9.1_AccesingApi.png)
 
+
 ## 9.2. Authentication I
-Kubernetes no tiene un objeto llamado usuario, ni almacena nombres de usuario u otros detalles relacionados en su almacén de objetos. Sin embargo, incluso sin eso, los Kubernetes pueden utilizar los nombres de usuario para el control de acceso y el registro de solicitudes, que exploraremos en este capítulo.
+Kubernetes no tiene un objeto llamado _USER_, ni almacena nombres de usuario u otros detalles relacionados en su almacén de objetos. Sin embargo, incluso sin eso, los Kubernetes pueden utilizar los nombres de usuario para el control de acceso y el registro de solicitudes, que exploraremos en este capítulo.
 
 Kubernetes tiene dos tipos de usuarios:
 
-* Usuarios normales
+* __Normal Users__
 Se gestionan fuera del clúster de Kubernetes a través de servicios independientes como certificados de usuario/cliente, un archivo con nombres de usuario/contraseñas, cuentas de Google, etc.
-* Cuentas de servicio
-Con los usuarios de la Cuenta de Servicio, los procesos del grupo se comunican con el servidor de la API para realizar diferentes operaciones. La mayoría de los usuarios de cuentas de servicio se crean automáticamente a través del servidor API, pero también pueden crearse manualmente. Los usuarios de cuentas de servicio están vinculados a un espacio de nombres determinado y montan las credenciales respectivas para comunicarse con el servidor de la API como secretos.
+* __Service Accounts__
+Con los usuarios de la _Service Account_, los procesos del cluster se comunican con el _API Server_ para realizar diferentes operaciones. La mayoría de los usuarios de cuentas de servicio se crean automáticamente a través del _API Server_, pero también pueden crearse manualmente. Los usuarios de _Service Account_o están vinculados a un _Namespace_ determinado y montan las credenciales respectivas para comunicarse con el _API Server_ como __Secrets__.
 
-Si se configuran correctamente, los Gobernantes también pueden admitir solicitudes anónimas, junto con las solicitudes de los Usuarios Normales y las Cuentas de Servicio. También se admite la suplantación de identidad de un usuario para que éste pueda actuar como otro usuario, una función útil para los administradores a la hora de solucionar problemas con las políticas de autorización.
+Si se configuran correctamente, kubernetes también pueden admitir _anonymous request_, junto con las solicitudes de los _Normal Users_ y _Service Accounts_. También se admite la suplantación de identidad de un usuario para que éste pueda actuar como otro usuario, una función útil para los administradores a la hora de solucionar problemas con las políticas de autorización.
 
 
 ## 9.3. Authentication II
 Para la autenticación, Kubernetes utiliza diferentes módulos de autenticación:
 
-* Certificados de cliente
-Para habilitar la autenticación de certificados de cliente, necesitamos hacer referencia a un archivo que contenga una o más autoridades de certificación pasando la opción --client-ca-file=SOMEFILE al servidor de la API. Las autoridades de certificación mencionadas en el archivo validarían los certificados de cliente presentados al servidor de la API. Al final de este capítulo también se encuentra disponible un vídeo de demostración que cubre este tema.
-* Archivo de tokens estático
-Podemos pasar un archivo que contenga tokens portadores predefinidos con la opción --token-auth-file=SOMEFILE al servidor de la API. Actualmente, estos tokens durarían indefinidamente, y no pueden ser cambiados sin reiniciar el servidor de la API.
-* Tokens de arranque
-Esta característica se encuentra actualmente en estado beta y se utiliza principalmente para el bootstrapping de un nuevo grupo de Kubernetes.
-* Archivo de contraseñas estáticas
-Es similar al Archivo de Token Estático. Podemos pasar un archivo que contenga los detalles básicos de autenticación con la opción --basic-auth-file=SOMEFILE. Estas credenciales durarían indefinidamente, y las contraseñas no pueden ser cambiadas sin reiniciar el servidor de la API.
-* Fichas de cuentas de servicio
-Se trata de un autentificador habilitado automáticamente que utiliza fichas al portador firmadas para verificar las solicitudes. Estos tokens se adjuntan a los Pods mediante el Controlador de Admisión de Cuentas de Servicios, que permite a los procesos del grupo hablar con el servidor de la API.
-* Tokens de conexión OpenID
+* __Client Certificates__
+Para habilitar la autenticación de certificados de cliente, necesitamos hacer referencia a un archivo que contenga una o más autoridades de certificación pasando la opción _--client-ca-file=SOMEFILE_ al _API Server_. Las autoridades de certificación mencionadas en el archivo validarían los certificados de cliente presentados al _API Server_.
+* __Static Token File__
+Podemos pasar un archivo que contenga tokens portadores predefinidos con la opción _--token-auth-file=SOMEFILE_ al _API Server_. Actualmente, estos tokens durarían indefinidamente, y no pueden ser cambiados sin reiniciar el _API Server_.
+* __Bootstrap Tokens__
+Esta característica se encuentra actualmente en estado beta y se utiliza principalmente para el bootstrapping de un nuevo cluster de Kubernetes.
+* __Static Password File__
+Es similar al _Static Token File_. Podemos pasar un archivo que contenga los detalles básicos de autenticación con la opción _--basic-auth-file=SOMEFILE_. Estas credenciales durarían indefinidamente, y las contraseñas no pueden ser cambiadas sin reiniciar el _API Server_.
+* __Service Account Tokens__
+Se trata de un autentificador habilitado automáticamente que utiliza fichas al portador firmadas para verificar las solicitudes. Estos tokens se adjuntan a los _Pods_ mediante el _ServiceAccount Admission Controller_, que permite a los procesos del grupo hablar con el _API Server_.
+* __OpenID Connect Tokens__
 OpenID Connect nos ayuda a conectar con proveedores de OAuth2, como Azure Active Directory, Salesforce, Google, etc., para descargar la autenticación a servicios externos.
-* Autenticación de Token Webhook
+* __Webhook Token Authentication__
 Con la autenticación basada en Webhook, la verificación de los tokens portadores puede ser descargada a un servicio remoto.
-* Autenticación del proxy
+* __Authenticating Proxy__
 Si queremos programar una lógica de autenticación adicional, podemos usar un proxy de autenticación.
 
-Podemos habilitar múltiples autenticadores, y el primer módulo para autenticar con éxito la solicitud provoca un cortocircuito en la evaluación. Para tener éxito, debemos habilitar al menos dos métodos: el autentificador de tokens de la cuenta de servicio y uno de los autentificadores de usuario.
+> Podemos habilitar múltiples autenticadores, y el primer módulo para autenticar con éxito la solicitud provoca un cortocircuito en la evaluación. Para tener éxito, debemos habilitar al menos dos métodos: el _Service Account Tokens Authenticator_ y un _User Authenticators_.
 
 
 ## 9.4. Authorization I
-Después de una autenticación exitosa, los usuarios pueden enviar las solicitudes de la API para realizar diferentes operaciones. A continuación, esas solicitudes de API son autorizadas por los gobernantes mediante diversos módulos de autorización.
+Después de una autenticación exitosa, los usuarios pueden enviar las solicitudes de la API para realizar diferentes operaciones. A continuación, esas solicitudes de API son autorizadas por kubernetes mediante diversos módulos de autorización.
 
-Algunos de los atributos de las solicitudes de la API que son revisados por los Kubernetes incluyen usuario, grupo, extra, recurso o espacio de nombres, por nombrar algunos. A continuación, estos atributos se evalúan en función de las políticas. Si la evaluación es satisfactoria, entonces la solicitud será permitida, de lo contrario será denegada. De manera similar al paso de autenticación, la autorización tiene múltiples módulos/autorizadores. Se puede configurar más de un módulo para un grupo de Kubernetes, y cada módulo se comprueba en secuencia. Si algún autorizador aprueba o rechaza una solicitud, entonces esa decisión se devuelve inmediatamente.
-
-A continuación, hablaremos de los autorizadores que son apoyados por los Kubernetes.
+> Algunos de los atributos de las solicitudes de la API que son revisados por los Kubernetes incluyen usuario, grupo, extra, recurso o namespaces, etc. A continuación, estos atributos se evalúan en función de las políticas. Si la evaluación es satisfactoria, entonces la solicitud será permitida, de lo contrario será denegada. De manera similar al paso de autenticación, la autorización tiene múltiples módulos/autorizadores. Se puede configurar más de un módulo para un grupo de Kubernetes, y cada módulo se comprueba en secuencia. Si algún autorizador aprueba o rechaza una solicitud, entonces esa decisión se devuelve inmediatamente.
 
 
 ## 9.5. Authorization II
 Módulos de autorización (Parte 1):
 
-* Autorizador de nodos
-La autorización de nodos es un modo de autorización con fines especiales que autoriza específicamente las solicitudes de API realizadas por kubelets. Autoriza las operaciones de lectura de kubelets para servicios, puntos finales, nodos, etc., y escribe operaciones para nodos, pods, eventos, etc. Para más detalles, por favor revise la documentación de Kubernetes.
+* __Node Authorizer__
+La autorización de _Nodes_ es un modo de autorización con fines especiales que autoriza específicamente las solicitudes de API realizadas por _kubelets_. Autoriza las operaciones de lectura de _kubelets_ para _Services_, _Endpoints_, _Nodes_, etc., y escribe operaciones para _Nodes_, _Pods_, eventos, etc.
 
-* Autorizador del Control de Acceso Basado en Atributos (ABAC)
-Con el autorizador ABAC, Kubernetes concede acceso a las solicitudes de API, que combinan políticas con atributos. En el siguiente ejemplo, el usuario estudiante sólo puede leer Pods en el espacio de nombres lfs158.
+* __Attribute-Based Access Control (ABAC) Authorizer__
+Con el _ABAC authorizer_, Kubernetes concede acceso a las solicitudes de API, que combinan políticas con atributos. En el siguiente ejemplo, el usuario _student_ sólo puede leer _Pods_ en el _Namespace_ lfs158.
 
 ```json
 {
@@ -1080,26 +1081,25 @@ Con el autorizador ABAC, Kubernetes concede acceso a las solicitudes de API, que
   }
 }
 ```
-Para habilitar el autorizador de ABAC, necesitaríamos iniciar el servidor de la API con la opción --authorization-mode=ABAC. También necesitaríamos especificar la política de autorización con --authorization-policy-file=PolicyFile.json. Para obtener más detalles, consulte la documentación de Kubernetes.
+> Para habilitar el _ABAC Authorizer_, necesitaríamos iniciar el _API Server_ con la opción _--authorization-mode=ABAC_. También necesitaríamos especificar la política de autorización con _--authorization-policy-file=PolicyFile.json_.
 
-* Autorizador de Webhook
-Con el autorizador Webhook, Kubernetes puede ofrecer decisiones de autorización a algunos servicios de terceros, que se devolverían verdaderas para una autorización exitosa, y falsas para un fracaso. Para habilitar el autorizador Webhook, necesitamos iniciar el servidor API con la opción --authorization-webhook-config-file=SOME_FILENAME, donde SOME_FILENAME es la configuración del servicio de autorización remota. Para obtener más detalles, consulte la documentación de Kubernetes.
+* __Webhook Authorizer__
+Con el _Webhook Authorizer_, Kubernetes puede ofrecer decisiones de autorización a algunos servicios de terceros, que se devolverían verdaderas para una autorización exitosa, y falsas para un fracaso. Para habilitar el _Webhook Authorizer_, necesitamos iniciar el _API Server_ con la opción _--authorization-webhook-config-file=SOME_FILENAME_, donde _SOME_FILENAME_ es la configuración del servicio de autorización remota.
+
 
 ## 9.6. Authorization III
 Módulos de autorización (Parte 2):
 
-* Autorizador del control de acceso basado en funciones (RBAC)
-En general, con el RBAC podemos regular el acceso a los recursos en base a los roles de los usuarios individuales. En los Kubernetes, podemos tener diferentes roles que pueden ser adjuntados a temas como usuarios, cuentas de servicio, etc. Al crear los roles, restringimos el acceso a los recursos mediante operaciones específicas, como crear, obtener, actualizar, parchear, etc. Estas operaciones se denominan verbos.
+* __Role-Based Access Control (RBAC) Authorizer__
+En general, con el _RBAC_ podemos regular el acceso a los recursos en base a los roles de los usuarios individuales. En los Kubernetes, podemos tener diferentes roles que pueden ser adjuntados a temas como usuarios, _services accounts_, etc. Al crear los roles, restringimos el acceso a los recursos mediante operaciones específicas, como _create_, _get_, _update_, _patch_, etc. Estas operaciones se denominan verbos.
 
-En RBAC, podemos crear dos tipos de roles:
+En _RBAC_, podemos crear dos tipos de roles:
 
-    * Rol
-      Con Role, podemos conceder acceso a los recursos de un espacio de nombres específico.
+    * __Role__
+      Con _Role_, podemos conceder acceso a los recursos de un _Namespace_ específico.
 
-    * ClusterRole
+    * __ClusterRole__
       La función de grupo puede utilizarse para conceder los mismos permisos que la función, pero su ámbito de aplicación abarca todo el grupo.
-
-      En este curso, nos centraremos en el primer tipo, el Rol. A continuación encontrarán un ejemplo:
 
 ```yaml
 kind: Role
@@ -1113,17 +1113,18 @@ rules:
   verbs: ["get", "watch", "list"]
 
 ```
+
 Como pueden ver, crea un papel de lector de pods, que sólo tiene acceso a leer los Pods de lfs158 Namespace. Una vez creado el rol, podemos vincular a los usuarios con RoleBinding.
 
 Hay dos tipos de RoleBindings:
 
-__RoleBinding__
-Nos permite vincular a los usuarios al mismo espacio de nombres que un Rol. También podríamos referirnos a un Rol del Cluster en RoleBinding, lo cual otorgaría permisos a los recursos del espacio de nombres definidos en el Rol del Cluster dentro del espacio de nombres de RoleBinding.
+    * __RoleBinding__
+      Nos permite vincular a los usuarios al mismo _Namespace_ que un _Role_. También podríamos referirnos a un _Role_ del Cluster en RoleBinding, lo cual otorgaría permisos a los recursos del _Namespace_ definidos en el _Role_ del Cluster dentro del _Namespace_ de RoleBinding.
 
-__ClusterRoleBinding__
-Nos permite conceder acceso a los recursos a nivel de grupo y a todos los Espacios de Nombres.
+    * __ClusterRoleBinding__
+      Nos permite conceder acceso a los recursos a nivel de grupo y a todos los _Namespace_.
 
-En este curso, nos centraremos en el primer tipo, RoleBinding. A continuación, encontrarán un ejemplo:
+En este curso, nos centraremos en el primer tipo, _RoleBinding_. A continuación, encontrarán un ejemplo:
 
 ```yaml
 kind: RoleBinding
@@ -1141,31 +1142,28 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 
 ```
-Como pueden ver, da acceso al usuario estudiante para leer los Pods de lfs158 Namespace.
+Como pueden ver, da acceso al usuario estudiante para leer los Pods de lfs158 _Namespace_.
 
-Para habilitar el autorizador RBAC, necesitaríamos iniciar el servidor de la API con la opción --authorization-mode=RBAC. Con el autorizador RBAC, configuramos dinámicamente las políticas. Para obtener más detalles, consulte la documentación de Kubernetes.
+> Para habilitar el autorizador _RBAC_, necesitaríamos iniciar el _API Server_ con la opción _--authorization-mode=RBAC_. Con el autorizador _RBAC_, configuramos dinámicamente las políticas. Para obtener más detalles, consulte la documentación de Kubernetes.
 
 
 ## 9.7.Admission Control
-El control de admisión se utiliza para especificar las políticas de control de acceso granular, que incluyen la autorización de contenedores privilegiados, la comprobación de la cuota de recursos, etc. Forzamos estas políticas usando diferentes controladores de admisión, como ResourceQuota, DefaultStorageClass, AlwaysPullImages, etc. Sólo entran en vigor después de que las solicitudes de la API son autenticadas y autorizadas.
+El _Admission Control_ se utiliza para especificar las políticas de control de acceso granular, que incluyen la autorización de contenedores privilegiados, la comprobación de la cuota de recursos, etc. Forzamos estas políticas usando diferentes _Admission Control_, como _ResourceQuota_, _DefaultStorageClass_, _AlwaysPullImages_, etc. Sólo entran en vigor después de que las solicitudes de la API son autenticadas y autorizadas.
 
-Para utilizar los controles de admisión, debemos iniciar el servidor de la API de Kubernetes con los plugins --enable-admission-plugins, que toma una lista ordenada y delimitada por comas de los nombres de los controladores:
+Para utilizar los _Admission Control_, debemos iniciar el _API Server_ de Kubernetes con los plugins _--enable-admission-plugins_, que toma una lista ordenada y delimitada por comas de los nombres de los controllers:
 
 ```yaml
 --enable-admission-plugins=NamespaceLifecycle,ResourceQuota,PodSecurityPolicy,DefaultStorageClass
 ```
 
-Kubernetes tiene algunos controladores de admisión habilitados por defecto. Para más detalles, revise la documentación de Kubernetes.
+> Kubernetes tiene algunos controladores de admisión habilitados por defecto.
 
 
 ## 9.8. Authentication and Authorization Exercise Guide
-Esta guía de ejercicios asume el siguiente entorno, que por defecto utiliza el certificado y la clave de /var/lib/minikube/certs/, y el modo RBAC para la autorización:
-
-            Minikube v1.0.1
-            Kubernetes v1.14.1
-            Docker 18.06.3-ce
-
-Esta guía de ejercicios se puede utilizar junto con el vídeo de demostración que sigue en la página siguiente y se ha actualizado para el entorno mencionado anteriormente, mientras que el vídeo presenta una distribución de Minikube más antigua con Kubernetes v1.9. 
+Esta guía de ejercicios asume el siguiente entorno, que por defecto utiliza el certificado y la clave de _/var/lib/minikube/certs/_, y el modo _RBAC_ para la autorización:
+* Minikube v1.0.1
+* Kubernetes v1.14.1
+* Docker 18.06.3-ce
 
 Iniciar Minikube:
 
@@ -1173,7 +1171,7 @@ Iniciar Minikube:
 $ minikube start
 ```
 
-Ver el contenido del archivo de configuración del cliente kubectl, observando el único minicubo de contexto y el único minicubo de usuario, creado por defecto:
+Ver el contenido del archivo de configuración del cliente _kubectl_, observando el único contexto de minikube y el único usuario de minkube, creado por defecto:
 
 ```yaml
 $ kubectl config view
@@ -1455,9 +1453,9 @@ nginx-77595c695-f2xmd   1/1     Running   0          7m41s
 
 ## Chapter 10. Services<a name="chapter10"></a>
 ## 10. Services
-Aunque la arquitectura impulsada por los microservicios tiene por objeto desacoplar los componentes de una aplicación, los microservicios siguen necesitando agentes para vincularlos o agruparlos lógicamente y balancear la carga a los que forman parte de ese conjunto lógico.
+Aunque la arquitectura impulsada por los _microservicios_ tiene por objeto desacoplar los componentes de una aplicación, los microservicios siguen necesitando agentes para vincularlos o agruparlos lógicamente y balancear la carga a los que forman parte de ese conjunto lógico.
 
-En este capítulo, aprenderemos sobre los __Services__, utilizados para agrupar __Pods__ para proporcionar puntos de acceso comunes del mundo exterior a las aplicaciones en contenedores. Aprenderemos sobre el demonio __kube-proxy__, que se ejecuta en cada __Worker Node__ para proporcionar acceso a los servicios. También hablaremos del descubrimiento de servicios y de los tipos de servicios, que deciden el alcance del acceso a un servicio.
+Aprenderemos sobre los __Services__, utilizados para agrupar __Pods__ para proporcionar puntos de acceso comunes del mundo exterior a las aplicaciones en contenedores. Aprenderemos sobre el demonio __kube-proxy__, que se ejecuta en cada __Worker Node__ para proporcionar acceso a los servicios. También hablaremos del descubrimiento de servicios y de los tipos de servicios, que deciden el alcance del acceso a un servicio.
 
 
 ## 10.1. Connecting Users to Pods
@@ -1467,7 +1465,7 @@ Tomemos, por ejemplo, un escenario en el que un usuario/cliente se conecta a un 
 
 ![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/10.1_AccessPod_A.png)
 
-Inesperadamente, el Pod al que está conectado el usuario/cliente se termina, y un nuevo __Pod__ es creado por el controlador. El nuevo __Pod__ tendrá una nueva dirección IP, que no será conocida automáticamente por el usuario/cliente del __Pod__ anterior.
+Inesperadamente, el __Pod__ al que está conectado el usuario/cliente se termina, y un nuevo __Pod__ es creado por el controlador. El nuevo __Pod__ tendrá una nueva dirección IP, que no será conocida automáticamente por el usuario/cliente del __Pod__ anterior.
 
 ![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/10.1_AccessPod_B.png)
 
@@ -1475,7 +1473,7 @@ Para superar esta situación, Kubernetes proporciona una abstracción de nivel s
 
 
 ## 10.2. Services
-En la siguiente representación gráfica, __app__ es la __Label key__, __frontend__ y __db__ son los __Label values__ para las diferentes vainas.
+En la siguiente representación gráfica, __app__ es la __Label key__, __frontend__ y __db__ son los __Label values__ para las diferentes _Pods_.
 
 ![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/10.2_Services_A.png)
 
@@ -1505,7 +1503,7 @@ spec:
     targetPort: 5000
 ```
 
-En este ejemplo, estamos creando un __Service__ de __frontend-svc__ seleccionando todos los __Pods__ que tienen el Label _key=app_ establecida en __value=frontend__. Por defecto, cada __Service__ recibe una dirección IP enrutada sólo dentro del clúster, conocida como __ClusterIP__. En nuestro ejemplo, tenemos 172.17.0.4 y 172.17.0.5 como ClusterIPs asignados a nuestros Servicios __frontend-svc__ y __db-svc__, respectivamente. 
+En este ejemplo, estamos creando un __Service__ de __frontend-svc__ seleccionando todos los __Pods__ que tienen el Label _key=app_ establecida en __value=frontend__. Por defecto, cada __Service__ recibe una dirección IP enrutada sólo dentro del clúster, conocida como __ClusterIP__. En nuestro ejemplo, tenemos 172.17.0.4 y 172.17.0.5 como _ClusterIPs_ asignados a nuestros Servicios __frontend-svc__ y __db-svc__, respectivamente. 
 
 ![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/10.3_AccessingThePodsUsingServiceObject.png)
 
@@ -1527,7 +1525,7 @@ Todos los __Worker Node__ ejecutan un demonio llamado __kube-proxy__, que vigila
 Como los __Services__ son el principal modo de comunicación en K8s, necesitamos una forma de descubrirlos en tiempo de ejecución. Kubernetes admite dos métodos para descubrir los __Services__:
 
 * __Environment Variables:__
-Tan pronto como el __Pod__ se inicia en cualquier Worker Node, el demonio __kubelet__ que se ejecuta en ese Node añade un conjunto de variables de entorno en el __Pod__ para todos los __Services__ activos. Por ejemplo, si tenemos un __Service__ activo llamado redis-master, que expone el puerto 6379, y su ClusterIP es 172.17.0.6, entonces, en un __Pod__ recién creado, podemos ver las siguientes variables de entorno:
+Tan pronto como el __Pod__ se inicia en cualquier _Worker Node_, el demonio __kubelet__ que se ejecuta en ese Node añade un conjunto de variables de entorno en el __Pod__ para todos los __Services__ activos. Por ejemplo, si tenemos un __Service__ activo llamado redis-master, que expone el puerto 6379, y su ClusterIP es 172.17.0.6, entonces, en un __Pod__ recién creado, podemos ver las siguientes variables de entorno:
 
 ```
 REDIS_MASTER_SERVICE_HOST=172.17.0.6
@@ -1564,7 +1562,7 @@ Con el __NodePort ServiceType__, además de un __ClusterIP__, un puerto alto, el
 
 ![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/10.7_NodePort.png)
 
-El __NodePort__ _ServiceType_ es útil cuando queremos que nuestros servicios sean accesibles desde el mundo exterior. El usuario final se conecta a cualquier Worker Node  en el puerto alto especificado, que envía la solicitud internamente al __ClusterIP__ del __Service__, y luego la solicitud se envía a las aplicaciones que se ejecutan dentro del clúster. Para acceder a varias aplicaciones del mundo externo, los administradores pueden configurar un proxy inverso, es decir, un __Ingress__, y definir reglas que apunten a los __Services__ dentro del clúster.
+El __NodePort__ _ServiceType_ es útil cuando queremos que nuestros servicios sean accesibles desde el mundo exterior. El usuario final se conecta a cualquier Worker Node en el puerto alto especificado, que envía la solicitud internamente al __ClusterIP__ del __Service__, y luego la solicitud se envía a las aplicaciones que se ejecutan dentro del clúster. Para acceder a varias aplicaciones del mundo externo, los administradores pueden configurar un proxy inverso, es decir, un __Ingress__, y definir reglas que apunten a los __Services__ dentro del clúster.
 
 
 ## 10.8. ServiceType: LoadBalancer
