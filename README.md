@@ -1015,7 +1015,7 @@ Módulos de software que pueden modificar o rechazar las solicitudes en base a a
 
 La siguiente imagen muestra las etapas anteriores:
 
-![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/9.1_AccesingApi.png)
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/9.1_AccessingApi.png)
 
 
 ## 9.2. Authentication I
@@ -1644,7 +1644,7 @@ A partir de eso, podemos crear una aplicación usando una configuración de dato
 
 * El nombre de la aplicación es __webserver__.
 * La imagen del Docker a usar es __nginx:alpine__, donde __alpine__ es la etiqueta de la imagen.
-* La cuenta de la réplica, o el número de vainas, es 3.
+* La cuenta de la réplica, o el número de Pods, es 3.
 * No hay __Service__, como lo crearemos más tarde.
 
 ![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/11.2_DashboardDeploy.png)
@@ -1739,7 +1739,7 @@ Todos los __Pods__ están listados, ya que cada Pod tiene la Label key __k8s-app
 
 
 ## 11.6. Exploring Labels and Selectors III
-* __Selecciona las vainas con una etiqueta determinada__
+* __Selecciona las Pods con una etiqueta determinada__
 Para usar un selector con el comando __kubectl get pods__, podemos usar la opción __-l__. En el siguiente ejemplo, estamos seleccionando todos los __Pods__ que tienen la key __k8s-app__ establecida como value __webserver__:
 
 ```
@@ -2484,7 +2484,7 @@ spec:
           servicePort: 80
 ```
 
-![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/14.3_Ingress.png)
+![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/14.2_Ingress.png)
 
 El recurso __Ingress__ no realiza por sí mismo ningún reenvío de solicitudes, sino que se limita a aceptar las definiciones de las normas de enrutamiento del tráfico. El __Ingress__ es realizado por un __Ingress Controller__.
 
