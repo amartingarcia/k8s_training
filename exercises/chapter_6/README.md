@@ -141,5 +141,5 @@ users:
 
 Es posible indicar la versión de kubernetes, además de limitarlo.
 ```
-minikube start -p nuevo --cpus=3 --memory=3000 --kubernetes-version=1.15.4
+minikube start -p training --cpus=3 --memory=3000 --kubernetes-version=1.15.4
 ```
