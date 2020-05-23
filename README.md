@@ -630,7 +630,7 @@ $ brew install kubernetes-cli
 
 
 ## 7.8. kubectl Configuration File
-Para acceder al clúster de Kubernetes, el cliente de __kubectl__ necesita el endpont del _Master Node_ y las credenciales adecuadas para poder interactuar con el _API Server_ que se ejecuta en el _Master Node_. Al iniciar Minikube, el proceso de inicio crea, por defecto, un archivo de configuración, _config_, dentro del directorio _.kube_ (a menudo denominado archivo _dot-kube-config_), que reside en el directorio principal del usuario. El archivo de configuración tiene todos los detalles de conexión requeridos por kubectl. Por defecto, el binario de kubectl analiza este archivo para encontrar el _endpoint_ de conexión del _Master Node_, junto con las credenciales.
+Para acceder al clúster de Kubernetes, el cliente de __kubectl__ necesita el endpoint del _Master Node_ y las credenciales adecuadas para poder interactuar con el _API Server_ que se ejecuta en el _Master Node_. Al iniciar Minikube, el proceso de inicio crea, por defecto, un archivo de configuración, _config_, dentro del directorio _.kube_ (a menudo denominado archivo _dot-kube-config_), que reside en el directorio principal del usuario. El archivo de configuración tiene todos los detalles de conexión requeridos por kubectl. Por defecto, el binario de kubectl analiza este archivo para encontrar el _endpoint_ de conexión del _Master Node_, junto con las credenciales.
 
 ```yaml
 $ kubectl config view
@@ -724,7 +724,7 @@ $ curl http://localhost:8001/
 }
 ```
 
-Con la anterior solicitud, obtenemos todos los edpoints del _API Server_. Al hacer clic en el enlace anterior (en el comando curl), se abrirá la misma salida de listado en una pestaña del navegador.
+Con la anterior petición, obtenemos todos los edpoints del _API Server_. Al hacer clic en el enlace anterior (en el comando curl), se abrirá la misma salida de listado en una pestaña del navegador.
 
 Podemos explorar todas las combinaciones de rutas con curl o en un navegador, por ejemplo:
 
@@ -834,7 +834,7 @@ spec:
 Analizando el código del objecto los campos son los siguientes:
 * __apiVersion__ es el primer campo obligatorio, y especifica el _API endpoint_ en el _Api Server_ al que queremos conectarnos; debe coincidir con una versión existente para el tipo de objeto definido. 
 * __kind__, que especifica el tipo de objeto - en nuestro caso es __Deployment__, pero puede ser __Pod__, __Replicaset__, __Namespace__, __Service__, etc. 
-* __metadata__, contiene la información básica del objeto, como el __name__, __lables__, __namespace__, etc. Nuestro ejemplo muestra dos campos __spec__ (__spec__ y __spec.template.spec__). 
+* __metadata__, contiene la información básica del objeto, como el __name__, __labels__, __namespace__, etc. Nuestro ejemplo muestra dos campos __spec__ (__spec__ y __spec.template.spec__). 
 * __spec__, requerido, marca el comienzo del bloque que define el estado deseado del objeto __Deployment__. En nuestro ejemplo, queremos asegurarnos de que 3 __Pods__ están funcionando en un momento dado (__replicas__). Los __Pods__ se crean utilizando la __template__ de __Pods__ definida en __spec.template__. Un objeto anidado, como el __Pod__ que forma parte de un __Deployment__, retiene sus __metadata__ y su __spec__ y pierde la __apiVersión__ y el __kind__ - ambos son reemplazados por la __template__. En __spec.template.spec__, definimos el estado deseado del __Pod__. Nuestro __Pod__ crea un único contenedor que ejecuta la imagen __nginx:1.15.11__ del Docker Hub.
 
 Una vez creado el objeto de despliegue, el sistema de Kubernetes adjunta el campo de __status__ al objeto.
@@ -885,7 +885,7 @@ Campos:
 ## 8.3. Labels
 Las __Labels__ son pares de __key-value__ unidos a objetos kubernetes (por ejemplo, __Pods__, __ReplicaSet__). 
 
-* Las __labels__ se utilizan para organizar y seleccionar un subconjunto de objetos, según los requisitos establecidos. Muchos objetos pueden tener la misma o las mismas __labels__. 
+* Las __labels__ se utilizan para organizar y seleccionar un subconjunto de objetos, según los requisitos establecidos. Muchos objetos pueden tener los mismos __labels__. 
 * Las __labels__ no proporcionan unicidad a los objetos. 
 * Los __controllers__ utilizan las __labels__ para agrupar lógicamente los objetos desacoplados, en lugar de utilizar los nombres o las identificaciones de los objetos.
 
@@ -916,7 +916,7 @@ Un __ReplicaSet__ es la próxima generación de __ReplicationController__.
 
 > Los __ReplicaSets__ soportan tanto __selectors__ basados en igualdad como en conjuntos, mientras que los __ReplicationControllers__ sólo soportan selectores basados en igualdad. Actualmente, esta es la única diferencia.
 
-Con la ayuda del __ReplicaSet__, podemos escalar el número de __Pods__ que ejecutan una imagen específica de la aplicación del contenedor. La escalada puede ser realizada manualmente o a través del uso de un __autoscaler__.
+Con la ayuda del __ReplicaSet__, podemos escalar el número de __Pods__ que ejecutan una imagen específica de la aplicación del contenedor. La escalada puede ser realizada manualmente o a través del uso de un __autoscalers__.
 
 Ejemplo de __ReplicaSet__, donde hemos establecido el número de __replicas__ a 3 para un __Pod__.
 
@@ -924,19 +924,19 @@ Ejemplo de __ReplicaSet__, donde hemos establecido el número de __replicas__ a 
 
 
 ## 8.7. ReplicaSets II
-Continuando con el mismo ejemplo y supongamos que una de los __Pods__ se ve obligado a terminar (debido a la insuficiencia de recursos, el tiempo de espera, etc.), y el estado actual ya no se corresponde con el estado deseado.
+Continuando con el mismo ejemplo, supongamos que uno de los __Pods__ se ve obligado a terminar (debido a la insuficiencia de recursos, el tiempo de espera, etc.), y el estado actual ya no se corresponde con el estado deseado.
 
 ![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/8.7_ReplicaSet.png)
 
 
 ## 8.8. ReplicaSets III
-El __ReplicaSet__ detectará que el estado actual ya no coincide con el estado deseado. El __ReplicaSet__ creará un __Pod__ adicional, asegurando así que el estado actual coincide con el estado deseado.
+El __ReplicaSet__ detectará que el estado actual ya no coincide con el estado deseado, y creará un __Pod__ adicional, asegurando así que el estado actual coincide con el estado deseado.
 
 ![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/8.8_ReplicaSet.png)
 
 Los __ReplicaSets__ pueden ser usados independientemente como __controllers__ de __Pod__, pero sólo ofrecen un conjunto limitado de características. 
 
-> Un conjunto de características complementarias son proporcionadas por __Deployments__, los controladores recomendados para la orquestación de __Pods__. __Deployments__ gestiona la creación, eliminación y actualización de los __Pods__. Un __Deployment__ crea automáticamente un __ReplicaSet__, que luego crea un __Pod__. No hay necesidad de administrar los __ReplicaSets__ y los __Pods__ por separado, el __Deployment__ los administrará en nuestro nombre.
+> Un conjunto de características complementarias son proporcionadas por __Deployments__, los controladores recomendados para la orquestación de __Pods__. Los __Deployments__ gestiona la creación, eliminación y actualización de los __Pods__, crea automáticamente un __ReplicaSet__, que luego crea un __Pod__. No hay necesidad de administrar los __ReplicaSets__ y los __Pods__ por separado, el __Deployment__ los administrará en nuestro nombre.
 
 
 ## 8.9. Deployments I
@@ -944,13 +944,13 @@ Los __Deployments__ proporcionan actualizaciones declarativas de los __Pods__ y 
 
 El __DeploymentController__ es parte del administrador de controladores del __Master Node__, y asegura que el estado actual siempre coincida con el estado deseado. Permite actualizaciones y degradaciones de aplicaciones sin problemas a través de despliegues y rollbacks, y gestiona directamente sus __ReplicaSets__ para el escalado de las aplicaciones. 
 
-En el siguiente ejemplo, un nuevo __Deployment__ crea __ReplicaSet__ A que luego crea 3 __Pods__, con cada __Pods Template__ configurada para ejecutar una imagen de contenedor __nginx:1.7.9__. En este caso, el __ReplicaSet__ A se asocia con __nginx:1.7.9__ representando un estado del __Deployment__. Este estado particular se registra como la Revisión 1.
+En el siguiente ejemplo, un nuevo __Deployment__ crea un __ReplicaSet__ A que luego crea 3 __Pods__, con cada __Pods Template__ configurada para ejecutar una imagen de contenedor __nginx:1.7.9__. En este caso, el __ReplicaSet__ A se asocia con __nginx:1.7.9__ representando un estado del __Deployment__. Este estado particular se registra como la Revisión 1.
 
 ![alt text](https://github.com/amartingarcia/k8s_training/blob/master/images/8.9_Deployment.png)
 
 
 ## 8.10. Deployments II
-Ahora, en el __Deployment__, cambiamos la __Pdos Template__ y actualizamos la imagen del contenedor de __nginx:1.7.9__ a __nginx:1.9.1__. El __Deployment__ dispara un nuevo __ReplicaSet__ B para la nueva imagen del contenedor versionada 1.9.1 y esta asociación representa un nuevo estado registrado del __Deployment__, Revisión 2. Transicionará los dos __ReplicaSets__, desde el __ReplicaSet__ A con 3 __Pods__ versionados 1.7.9 al nuevo __ReplicaSet__ B con 3 nuevos __Pods__ versionados 1.9.1, o desde la Revisión 1 a la Revisión 2, es una actualización continua del __Deployment__. 
+Ahora, en el __Deployment__, cambiamos la __Pdos Template__ y actualizamos la imagen del contenedor de __nginx:1.7.9__ a __nginx:1.9.1__. El __Deployment__ dispara un nuevo __ReplicaSet__ B para la nueva imagen del contenedor versionada 1.9.1 y esta asociación representa un nuevo estado registrado del __Deployment__. Transicionará los dos __ReplicaSets__, desde el __ReplicaSet__ A con 3 __Pods__ versionados 1.7.9 al nuevo __ReplicaSet__ B con 3 nuevos __Pods__ versionados 1.9.1, o desde la Revisión 1 a la Revisión 2, es una actualización continua del __Deployment__. 
 
 Un _rolling update_ se activa cuando actualizamos __Pods Template__ para un despliegue. Operaciones como escalar o etiquetar el despliegue no activan una _rolling update_, por lo tanto no cambian el número de revisión.
 
@@ -987,7 +987,7 @@ Es un __namespace__
 inseguro y legible por cualquiera, utilizado para la exposición de información pública no sensible sobre el cluster.
 * __kube-node-lease:__ 
 * Es el namespace que tiene un registro de la salud de los nodos, interactua con kubelet.
-> En versiones anteriores se utilizaba NodeStatus para comprobar la vida de los mismos pero actualmente se realiza esa comprobación por medio de Node Lease, y este controlador es el asociado a ese namespace
+> En versiones anteriores se utilizaba NodeStatus para comprobar la vida de los mismos pero actualmente se realiza esa comprobación por medio de Node Lease, y este controlador es el asociado a ese namespace.
 * __default:__
 Contiene los objetos y recursos creados por los administradores y desarrolladores.
 
@@ -999,7 +999,7 @@ Contiene los objetos y recursos creados por los administradores y desarrolladore
 ## 9. Authentication, Authorization, Admission Control
 Cada solicitud de API que llega al __API Server__ tiene que pasar por tres etapas diferentes antes de ser aceptada por el servidor y actuar en consecuencia:
 * Authentication.
-* Authorization
+* Authorization.
 * Admission Control stages of Kubernetes API requests.
 
 
@@ -1026,7 +1026,7 @@ Kubernetes tiene dos tipos de usuarios:
 * __Normal Users__
 Se gestionan fuera del clúster de Kubernetes a través de servicios independientes como certificados de usuario/cliente, un archivo con nombres de usuario/contraseñas, cuentas de Google, etc.
 * __Service Accounts__
-Con los usuarios de la _Service Account_, los procesos del cluster se comunican con el _API Server_ para realizar diferentes operaciones. La mayoría de los usuarios de cuentas de servicio se crean automáticamente a través del _API Server_, pero también pueden crearse manualmente. Los usuarios de _Service Account_o están vinculados a un _Namespace_ determinado y montan las credenciales respectivas para comunicarse con el _API Server_ como __Secrets__.
+Con los usuarios de la _Service Account_, los procesos del cluster se comunican con el _API Server_ para realizar diferentes operaciones. La mayoría de los _ServiceAccount_ se crean automáticamente a través del _API Server_, pero también pueden crearse manualmente. Los usuarios de _Service Account_ están vinculados a un _Namespace_ determinado y montan las credenciales respectivas para comunicarse con el _API Server_ como __Secrets__.
 
 Si se configuran correctamente, kubernetes también pueden admitir _anonymous request_, junto con las solicitudes de los _Normal Users_ y _Service Accounts_. También se admite la suplantación de identidad de un usuario para que éste pueda actuar como otro usuario, una función útil para los administradores a la hora de solucionar problemas con las políticas de autorización.
 
@@ -1091,15 +1091,15 @@ Con el _Webhook Authorizer_, Kubernetes puede ofrecer decisiones de autorizació
 Módulos de autorización (Parte 2):
 
 * __Role-Based Access Control (RBAC) Authorizer__
-En general, con el _RBAC_ podemos regular el acceso a los recursos en base a los roles de los usuarios individuales. En los Kubernetes, podemos tener diferentes roles que pueden ser adjuntados a temas como usuarios, _services accounts_, etc. Al crear los roles, restringimos el acceso a los recursos mediante operaciones específicas, como _create_, _get_, _update_, _patch_, etc. Estas operaciones se denominan verbos.
+En general, con el _RBAC_ podemos regular el acceso a los recursos en base a los roles de los usuarios individuales. En los Kubernetes, podemos tener diferentes roles que pueden ser adjuntados a temas como usuarios, _services accounts_, etc. Al crear los roles, restringimos el acceso a los recursos mediante operaciones específicas, como _create_, _get_, _update_, _patch_, etc. Estas operaciones se denominan __verbos__.
 
 En _RBAC_, podemos crear dos tipos de roles:
 
     * __Role__
-      Con _Role_, podemos conceder acceso a los recursos de un _Namespace_ específico.
+      Define un tipo de recusros y operaciones que pueden asignarse a un usuario o grupo a nive de namespace
 
     * __ClusterRole__
-      La función de grupo puede utilizarse para conceder los mismos permisos que la función, pero su ámbito de aplicación abarca todo el grupo.
+      Define un tipo de recusros y operaciones que pueden asignarse a un usuario o grupo a nive de cluster
 
 ```yaml
 kind: Role
@@ -1114,9 +1114,9 @@ rules:
 
 ```
 
-Como pueden ver, crea un papel de lector de pods, que sólo tiene acceso a leer los Pods de lfs158 Namespace. Una vez creado el rol, podemos vincular a los usuarios con RoleBinding.
+El anterior role sólo tiene acceso a leer los Pods de lfs158 Namespace. Una vez creado el rol, podemos vincularlo a usuarios con _RoleBinding_.
 
-Hay dos tipos de RoleBindings:
+Hay dos tipos de _RoleBindings_:
 
     * __RoleBinding__
       Nos permite vincular a los usuarios al mismo _Namespace_ que un _Role_. También podríamos referirnos a un _Role_ del Cluster en RoleBinding, lo cual otorgaría permisos a los recursos del _Namespace_ definidos en el _Role_ del Cluster dentro del _Namespace_ de RoleBinding.
@@ -1124,7 +1124,6 @@ Hay dos tipos de RoleBindings:
     * __ClusterRoleBinding__
       Nos permite conceder acceso a los recursos a nivel de grupo y a todos los _Namespace_.
 
-En este curso, nos centraremos en el primer tipo, _RoleBinding_. A continuación, encontrarán un ejemplo:
 
 ```yaml
 kind: RoleBinding
@@ -1142,7 +1141,7 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 
 ```
-Como pueden ver, da acceso al usuario estudiante para leer los Pods de lfs158 _Namespace_.
+Damos acceso al usuario student para leer los Pods de lfs158 _Namespace_.
 
 > Para habilitar el autorizador _RBAC_, necesitaríamos iniciar el _API Server_ con la opción _--authorization-mode=RBAC_. Con el autorizador _RBAC_, configuramos dinámicamente las políticas. Para obtener más detalles, consulte la documentación de Kubernetes.
 
