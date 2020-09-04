@@ -5,7 +5,7 @@ metadata:
   labels:
     app: rsvp
 spec:
-  replicas: 2
+  replicas: 5
   selector:
     matchLabels:
       app: rsvp
@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: rsvp-app
-        image: teamcloudyuga/rsvpapp
+        image: nginx
         env:
         - name: MONGODB_HOST
           value: mongodb

@@ -1,0 +1,27 @@
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority: /home/adrian.martin/.minikube/ca.crt
+    server: https://192.168.39.197:8443
+  name: minikube
+contexts:
+- context:
+    cluster: minikube
+    user: minikube
+  name: minikube
+- context:
+    cluster: minikube
+    namespace: training
+    user: training-user
+  name: training-context
+current-context: training-context
+kind: Config
+preferences: {}
+users:
+- name: minikube
+  user:
+    client-certificate: /home/adrian.martin/.minikube/client.crt
+    client-key: /home/adrian.martin/.minikube/client.key
+- name: training-user
+  user:
+    token: eyJhbGciOiJSUzI1NiIsImtpZCI6Ik1QN2RGZENLdUYyRXVta1JmM2hFdXhGMGlHcTBiNDg1TFk5Mk5LdXlUMUUifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJ0cmFpbmluZyIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJ0cmFpbmluZy1zYS10b2tlbi1kcXdtOSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJ0cmFpbmluZy1zYSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjU4ZDczOGJkLWRlZmQtNDgzMS04MTA2LTQ2OGZmODcwN2ZmNCIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDp0cmFpbmluZzp0cmFpbmluZy1zYSJ9.yQsJHsSYtRINHVEE9RCLEGqIB6zPFrnss9-0w2ZqQQKNEL-Ven3LBHZlVtcZg0oe4RPksagnZojc_AkvuviEhtchzcEERdg25a-ND35l9RX7sDrOH02qX-ppwJ88EpxzCicQqpRehbRabbWhFOY84PL-g0cWba0I7XIr_IMCJCmCu7LpP1m3NUnB43HFT9ep80WaNB4XzFh-vQ67SDZgOnEy1eQpxQBVO3p1eSwBbTcpg2gLxcw0ji90zkwGutCHwBTgi4Bcwq7hgfgQzHhKeIN_SaGgpK1Dy8u_OT_5qc4ILyuPYOw7RTRk9zC0fnWG_-X1Zr2ACMDtSVuB4940Sw
