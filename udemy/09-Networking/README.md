@@ -127,7 +127,40 @@ nameserver 8.8.8.8
 
 
 ### Domain Names
-Se llama nombre de dominio a una dirección 
+Se llama nombre de dominio a la traducción de una IP. La razón de que un dominio esté separado por puntos es para agrupar.
+
+La última parte de un nombre de dominio .org, .com, .net, etc son los dominios de nivel superior, y representan la intención del sitio web.
+
+El resto del nombre se entiende por subdominio. Por ejemplo: www.google.com, maps.google.com, drive.google.com.
+
+### Search Domain
+Cuando queremos acceder internamente a los servicios de una empresa, y queremos solamente utilizar el nombre de los servicios, podemos añadir a nuestro fichero:
+```sh
+cat /etc/resolv.conf
+
+nameserver  192.168.1.100
+search      mycompany.com   prod.mycompany.com
+```
+
+### Record Types
+¿Como se almacenan los registros DNS?
+
+| Types |                 |                                    | Description                                                            |
+|-------|-----------------|------------------------------------|------------------------------------------------------------------------|
+| A     | web-server      | 192.168.1.1                        | Vinculan un nombre con una IP                                          |
+| AAAA  | web-server      | 2001:asdf:dfgh:9616:316651:fgh45   | Vinculan un nombre con una IPv6                                        |
+| CNAME | foo.web-server  | eat.web-server, hungry.web-server  | Contiene un __alias__ o nombre alternativo para otro registro A o AAAA |
+
+Otros registros:
+| Types |                                                                       | Description                                                            |
+|-------|-----------------------------------------------------------------------|------------------------------------------------------------------------|
+| SOA   | ns1.dnsimple.com admin.dnsimple.com 2013022001 86400 7200 604800 300  | _Start of Authority_ Información sobre la zona que se organiza, importantes para la trasnferencia de zonas|
+| MX    | ASPMX.L.GOOGLE.COM                                                    | __Mail Exchange__, intercambio que se produce mediante un servidor SMTP, es posible configurar varios con distintas prioridades para compensar fallos |
+| PTR   | 34.216.184.93.in-addr.arpa. IN PTR example.org.                       | __Reverse lookup__, el servidor DNS puede indnicar quenombre de host pertenece a una IP  |
+| NS    | ns1.subname.example.com                                               | Servidor de nombres de una zona, determina donde recae la responsabilidad de una zona concreta |
+| TXT   | v=spf1 ip4:192.0.2.0/24 ip4:198.51.100.123 ip6:2620:0:860::/46 a -all | Contienen texto, como información para usuarios, también pueden añadirse detalles sobre la empresa |
+| SRV   | _sip._tcp.example.com.                                                | Informa sobre los servicios disponibles del dominio |
+| LOC   | LOC record statdns.net.   IN LOC   52 22 23.000 N 4 53 32.000 E -2.00m 0.00m 10000m 10m | Ubicación fisica del servidor |
 
 ## Prerequisite - CoreDNS
 ## Prerequisite - Network Namespaces
