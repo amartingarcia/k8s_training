@@ -320,7 +320,85 @@ Contiene configuraciones relacionadas con Bridge, enrutamiento y enmascaramiento
 ```
 ls /etc/cni/net.d
 
-10-flannel.conf
+10-bridge.conf
+
+# Show file
+cat 10-bridge.conf
+
+{
+	"cniVersion": "0.2.0",
+	"name": "mynet",
+	"type": "bridge",
+	"bridge": "cni0",
+	"isGateway": true,
+	"ipMasq": true,
+	"ipam": {
+		"type": "host-local",
+		"subnet": "10.22.0.0/16",
+		"routes": [
+			{ "dst": "0.0.0.0/0" }
+		]
+	}
+}
 ```
 
 # CNI weave
+La solución que inicialmente se exponía, utilizaba un enrutador para enviar el tráfico, esto funciona cuando la red es muy pequeña y simple. 
+Para entornos granes con cientos de nodos, y cientos de PODs en cada nodo no es práctico, ya que es posible que la tabla de enrutamiento no adminta tantas entradas.
+
+El complemento CNI Weave se implementa en cada nodo. Y se comunican entre si para intercambiar información sobre los nodos, la red y los PODs.
+Cada agente conoce los PODs y sus IPs de los otros nodos.
+
+Weave crea su propio puente sobre los nodos y lo nombra como Weave. Luego, asigna la dirección IP a cada red.
+Un pod puede estar en varias redes, como por ejemplo en la red de Weave o en la red de docker, la ruta que toma un paquete para llegar al destino, depende de la ruta configurada en el contendor.
+
+Weave se asegura de que todos los PODs obtengan la ruta correcta configurada para llegar al agente, cuando se envia un paquete de un pod a otro nodo, Weave intercepta el paquete e identifica que está en una red separada. Luego, encapsula el paquete en uno nuevo con nuevo origen y destino, y lo envia a traves de la red.
+
+## Deploy Weave
+Se puede implementar como servicios o daemon en cada nodo del cluster de forma manual. O si kubernetes ya está configurado se puede implementar como __daemonset__.
+
+```
+kubectlapply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+serviceaccount/weave-net created
+clusterrole.rbac.authorization.k8s.io/weave-net created
+clusterrolebinding.rbac.authorization.k8s.io/weave-net created
+role.rbac.authorization.k8s.io/weave-net created
+rolebinding.rbac.authorization.k8s.io/weave-net created
+daemonset.extensions/weave-net created
+```
+
+## Weave peers
+Si implementó su cluster con kubeadm, puede verlo en cada nodo:
+```bash
+Weave Peerskubectlget pods –n kube-system
+NAME                             READY     STATUS    RESTARTS   AGE       IP            NODE      NOMINATED NODE
+coredns-78fcdf6894-99khw         1/1       Running   0          19m       10.44.0.2     master    <none>
+coredns-78fcdf6894-p7dpj         1/1       Running   0          19m       10.44.0.1     master    <none>
+etcd-master                      1/1       Running   0          18m       172.17.0.11   master    <none>
+kube-apiserver-master            1/1       Running   0          18m       172.17.0.11   master    <none>
+kube-scheduler-master            1/1       Running   0          17m       172.17.0.11   master    <none>
+weave-net-5gcmb                  2/2       Running   1          19m       172.17.0.30   node02    <none>
+weave-net-fr9n9                  2/2       Running   1          19m       172.17.0.11   master    <none>
+weave-net-mc6s2                  2/2       Running   1          19m       172.17.0.23   node01    <none>
+weave-net-tbzvz                  2/2       Running   1          19m       172.17.0.52   node03    <none>
+
+## Show logs
+kubectllogs weave-net-5gcmb weave –n kube-system
+INFO: 2019/03/03 03:41:08.643858 Command line options: map[status-addr:0.0.0.0:6782 http-addr:127.0.0.1:6784 ipalloc-range:10.32.0.0/12 name:9e:96:c8:09:bf:c4 nickname:node02 conn-limit:30 datapath:datapathdb-prefix:/weavedb/weave-net host-root:/host port:6783 docker-api: expect-npc:trueipalloc-init:consensus=4 no-dns:true]
+INFO: 2019/03/03 03:41:08.643980 weave  2.2.1
+INFO: 2019/03/03 03:41:08.751508 Bridge type is bridged_fastdp
+INFO: 2019/03/03 03:41:08.751526 Communication between peers is unencrypted.
+INFO: 2019/03/03 03:41:08.753583 Our name is 9e:96:c8:09:bf:c4(node02)
+INFO: 2019/03/03 03:41:08.753615 Launch detected -using supplied peer list: [172.17.0.11 172.17.0.23 172.17.0.30 172.17.0.52]
+INFO: 2019/03/03 03:41:08.753632 Checking for pre-existing addresses on weave bridge
+INFO: 2019/03/03 03:41:08.756183 [allocator 9e:96:c8:09:bf:c4] No valid persisted data
+INFO: 2019/03/03 03:41:08.761033 [allocator 9e:96:c8:09:bf:c4] Initialisingvia deferred consensus
+INFO: 2019/03/03 03:41:08.761091 Sniffing traffic on datapath(via ODP)
+INFO: 2019/03/03 03:41:08.761659 ->[172.17.0.23:6783] attempting connection
+INFO: 2019/03/03 03:41:08.817477 overlay_switch->[8a:31:f6:b1:38:3f(node03)] using fastdp
+INFO: 2019/03/03 03:41:08.819493 sleeve ->[172.17.0.52:6783|8a:31:f6:b1:38:3f(node03)]: Effective MTU verified at 1438
+INFO: 2019/03/03 03:41:09.107287 Weave version 2.5.1 is available; please update at https://github.com/weaveworks/weave/releases/download/v2.5.1/weave
+INFO: 2019/03/03 03:41:09.284907 Discovered remote MAC 8a:dd:b5:14:8f:a3 at 8a:dd:b5:14:8f:a3(node01)
+INFO: 2019/03/03 03:41:09.331952 Discovered remote MAC 8a:31:f6:b1:38:3f at 8a:31:f6:b1:38:3f(node03)
+INFO: 2019/03/03 03:41:09.355976 Discovered remote MAC 8a:a5:9c:d2:86:1f at 8a:31:f6:b1:38:3f(node0
+```
