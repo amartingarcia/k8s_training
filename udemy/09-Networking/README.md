@@ -162,8 +162,81 @@ Otros registros:
 | SRV   | _sip._tcp.example.com.                                                | Informa sobre los servicios disponibles del dominio |
 | LOC   | LOC record statdns.net.   IN LOC   52 22 23.000 N 4 53 32.000 E -2.00m 0.00m 10000m 10m | Ubicación fisica del servidor |
 
+### Tools for debug
+* nslookup: consultar el nombre de host de un servidor DNS
+```
+nslookup www.google.es 
+Server:		127.0.0.53
+Address:	127.0.0.53#53
+
+Non-authoritative answer:
+Name:	www.google.es
+Address: 74.125.193.94
+Name:	www.google.es
+Address: 2a00:1450:400b:c01::5e
+```
+
+* dig: comprueba la resolución de nombres.
+```
+dig www.google.es
+
+; <<>> DiG 9.11.3-1ubuntu1.13-Ubuntu <<>> www.google.es
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 56212
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 65494
+;; QUESTION SECTION:
+;www.google.es.			IN	A
+
+;; ANSWER SECTION:
+www.google.es.		106	IN	A	74.125.193.94
+
+;; Query time: 51 msec
+;; SERVER: 127.0.0.53#53(127.0.0.53)
+;; WHEN: Tue Nov 03 15:28:07 CET 2020
+;; MSG SIZE  rcvd: 58
+```
 ## Prerequisite - CoreDNS
+In the previous lecture we saw why you need a DNS server and how it can help manage name resolution in large environments with many hostnames and Ips and how you can configure your hosts to point to a DNS server. In this article we will see how to configure a host as a DNS server.
+
+We are given a server dedicated as the DNS server, and a set of Ips to configure as entries in the server. There are many DNS server solutions out there, in this lecture we will focus on a particular one – CoreDNS.
+
+So how do you get core dns? CoreDNS binaries can be downloaded from their Github releases page or as a docker image. Let’s go the traditional route. Download the binary using curl or wget. And extract it. You get the coredns executable.
+
+Run the executable to start a DNS server. It by default listens on port 53, which is the default port for a DNS server.
+
+Now we haven’t specified the IP to hostname mappings. For that you need to provide some configurations. There are multiple ways to do that. We will look at one. First we put all of the entries into the DNS servers /etc/hosts file.
+
+And then we configure CoreDNS to use that file. CoreDNS loads it’s configuration from a file named Corefile. Here is a simple configuration that instructs CoreDNS to fetch the IP to hostname mappings from the file /etc/hosts. When the DNS server is run, it now picks the Ips and names from the /etc/hosts file on the server.
+
+CoreDNS also supports other ways of configuring DNS entries through plugins. We will look at the plugin that it uses for Kubernetes in a later section.
+
+Read more about CoreDNS here:
+
+https://github.com/kubernetes/dns/blob/master/docs/specification.md
+
+https://coredns.io/plugins/kubernetes/
+
+
 ## Prerequisite - Network Namespaces
+Los contenedores se separan del host mediante namespaces, lo cual permite que los procesos que corren dentro, no puedan acceder a los procesos de fuera, a menos que se indique lo contrario.
+Sin embargo el host, si puede ver los procesos de todos los contendores que corren en el.
+```
+ps aux 
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         1  0.1  0.0 226388  9948 ?        Ss   08:00   0:46 /sbin/init splash
+root         2  0.0  0.0      0     0 ?        S    08:00   0:00 [kthreadd]
+root         4  0.0  0.0      0     0 ?        I<   08:00   0:00 [kworker/0:0H]
+root         6  0.0  0.0      0     0 ?        I<   08:00   0:00 [mm_percpu_wq]
+root         7  0.0  0.0      0     0 ?        S    08:00   0:00 [ksoftirqd/0]
+root         8  0.1  0.0      0     0 ?        I    08:00   0:44 [rcu_sched]
+root         9  0.0  0.0      0     0 ?        I    08:00   0:00 [rcu_bh]
+root        10  0.0  0.0      0     0 ?        S    08:00   0:00 [migration/0]
+```
+
 ## Prerequisite - Docker Networking
 ## Prerequisite - CNI
 ## Cluster Networking
@@ -185,8 +258,8 @@ Kubelet es el encargado de crear contenedores en los nodos. Cuando un contenedor
 ```
 --cni-conf-dir=/etc/cni/net.d
 --cni-bin-dir=/etc/cni/bin
-
 ```
+
 Los estandares de CNI indican como debe añadir y eliminar un contendor a nivel de red. Una visión del script podría ser la siguiente
 ```
 ADD)
@@ -213,4 +286,41 @@ CNI define las responsabilidades del tiempo de ejcución del contenedor.
 - Container Runtime to invoke Network Plugin (bridge) whtn container is ADDed
 - Container Runtime to invoke Network Plugin (bridge) whtn container is DELeted.
 - JSON format of the Network Configuration
-- 
+
+El complemento CNI se configura en el servicio kubelet en cada nodo del cluster.
+Si observamos el fichero de servicio de kubelet, podremos ver:
+```
+kubelet.service
+...
+
+--network-plugin=cni \\
+--cni-bin-dir=/opt/cni/bin \\
+--cni-conf-dir=/etc/cni/net.d \\
+
+...
+```
+
+También es posible ver la configuración del proceso mediante:
+```
+ps -aux | grep kubelet
+
+
+```
+
+En el directorio cni/bin se ubican todos los complemtos CNI compatibles como ejecutables.
+```sh
+ls /opt/cni/bin
+
+bridge dhcp flannel host-device host-local ipvlan loopback mcvlan ptp sample tunning vlan
+```
+
+En el directorio /etc/cni/net.d, se ubica la configuración a aplicar, si hubiera varios ficheros, se aplicaría en orden alfabetico.
+Contiene configuraciones relacionadas con Bridge, enrutamiento y enmascaramiento NAT. También definie si la interfaz de red debe tener asignada una dirección IP, ...
+
+```
+ls /etc/cni/net.d
+
+10-flannel.conf
+```
+
+# CNI weave
