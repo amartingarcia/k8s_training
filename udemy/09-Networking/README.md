@@ -370,7 +370,8 @@ daemonset.extensions/weave-net created
 ## Weave peers
 Si implementó su cluster con kubeadm, puede verlo en cada nodo:
 ```bash
-Weave Peerskubectlget pods –n kube-system
+kubectlget pods –n kube-system
+
 NAME                             READY     STATUS    RESTARTS   AGE       IP            NODE      NOMINATED NODE
 coredns-78fcdf6894-99khw         1/1       Running   0          19m       10.44.0.2     master    <none>
 coredns-78fcdf6894-p7dpj         1/1       Running   0          19m       10.44.0.1     master    <none>
@@ -381,9 +382,11 @@ weave-net-5gcmb                  2/2       Running   1          19m       172.17
 weave-net-fr9n9                  2/2       Running   1          19m       172.17.0.11   master    <none>
 weave-net-mc6s2                  2/2       Running   1          19m       172.17.0.23   node01    <none>
 weave-net-tbzvz                  2/2       Running   1          19m       172.17.0.52   node03    <none>
+```
 
-## Show logs
+```
 kubectllogs weave-net-5gcmb weave –n kube-system
+
 INFO: 2019/03/03 03:41:08.643858 Command line options: map[status-addr:0.0.0.0:6782 http-addr:127.0.0.1:6784 ipalloc-range:10.32.0.0/12 name:9e:96:c8:09:bf:c4 nickname:node02 conn-limit:30 datapath:datapathdb-prefix:/weavedb/weave-net host-root:/host port:6783 docker-api: expect-npc:trueipalloc-init:consensus=4 no-dns:true]
 INFO: 2019/03/03 03:41:08.643980 weave  2.2.1
 INFO: 2019/03/03 03:41:08.751508 Bridge type is bridged_fastdp
@@ -402,3 +405,103 @@ INFO: 2019/03/03 03:41:09.284907 Discovered remote MAC 8a:dd:b5:14:8f:a3 at 8a:d
 INFO: 2019/03/03 03:41:09.331952 Discovered remote MAC 8a:31:f6:b1:38:3f at 8a:31:f6:b1:38:3f(node03)
 INFO: 2019/03/03 03:41:09.355976 Discovered remote MAC 8a:a5:9c:d2:86:1f at 8a:31:f6:b1:38:3f(node0
 ```
+
+# IP Address Management - Weave
+Esta sección cubre la herramienta que elimina redes y los nodos a asignados a una subred.
+
+CNI dice que el responsabilidad del proveedor se soluciones de red ocuparse de asignar IPs a los contendores.
+
+En el fichero de configuración de CNI, tiene una sección llamada __"ipam"__ donde se indica el tipo de complemento y la ruta que utilizará.
+
+```json
+cat  /etc/cni/net.d/10-bridge.conf
+{
+	"cniVersion": "0.2.0",
+	"name": "mynet",
+	"type": "bridge",
+	"bridge": "cni0",
+	"isGateway": true,
+	"ipMasq": true,
+	"ipam": {
+		"type": "host-local",
+		"subnet": "10.22.0.0/16",
+		"routes": [
+			{ "dst": "0.0.0.0/0" }
+		]
+	}
+}
+```
+
+
+# Service Networking
+Recapitulando anteriores temas, rara vez configuraremos dos pods para comunicarse directamente entre si.
+Si necesitamos que un pod acceda a servicios de otro pod, siempre utilizará un objecto SERVICE. El objecto Service se crea "delante" de un POD, y obtiene una dirección IP y un nombre, otros PODs, accederán mediante la IP o el nombre del Service.
+
+## Cluster IP
+Cuando se crea un service es accesible desde todo el cluster, independientemente del nodo en el que se encuentren.
+
+## NodePort
+Cuando necesitemos que un servicio se accesible desde fuera del cluster, utilizamos Service de tipo NodePort.
+También se le asigna una dirección IP y un nombre y es accesible desde el cluster, pero además expone la aplicación en un puerto en todos los nodos.
+
+## Networking
+El servicio kubelet es el encargado de crear los PODs, y observa los cambios del cluster a través del API Server.
+Cada vez que se crea un POD se invoca al complemento CNI para configurar la red para ese POD.
+
+Del mismo modo, cada nodo ejecuta otro componente kube-proxy. Kube-proxy observa los cambios en el cluster a través del API Server, y cada vez que se crea  un nuevo servicio, kube-proxy entra en acción.
+
+Cuando se crea un service, se le asigna una IP de un rango predefinido. Los componentes de kube-proxy que se ejecutan en cada nodo, obtienen esa IP y crean las reglas de reenvio a cada nodo del cluster, indicando que cada tráfico que llegue a la IP del Service debe ir a la IP del POD.
+
+Kube-proxy, adminte diferentes formas de crear reglas:
+- Como el userspace donde kube-proxy escucha en un puerto para cada servicio y conecta las conexiones de proxy a los pods.
+- Reglas ipvs, tablas IPs.
+- Iptables
+
+El valor predeterminado es __iptables__. Podría verse el valor establecido visualizando los logs de los PODs de kube-proxy.
+Puedes ver las reglas ejecutando:
+
+```bash
+iptables -L -t net | grep <service-name>
+
+KUBE-SVC-XA5OGUC7YRHOS3PU	tcp	--	anywhere 	10.103.132.104	/*	default/db-service:		cluster IP 	*/ 	tcp   dpt:3306
+DNAT						tcp --	anywhere 	anywhere		/*	default/db-service:		*/ 	tcp 	to:10.244.1.2:3306
+KUBE-SEP-JBWCWHHQM57V2WN7	tcp -- 	anywhere	anywhere		/*	default/db-service:		*/
+```
+
+También es posible ver, como kube-proxy crea estas reglas de entrada:
+```bash
+cat /var/log/kube-proxy.log
+
+I0307 04:29:29.883941	1	server_others.go:140] Using iptables Proxier.
+I0307 04:29:29.912037	1	server_others.go:174] Tearing down inactive rules.
+I0307 04:29:30.027360	1	server.go:448] Version: v1.11.8
+I0307 04:29:30.049773	1	conntrack.go:98] Set sysctl 'net/netfilter/nf_conntrack_max' to 131072
+I0307 04:29:30.049945	1	conntrack.go:52] Setting nf_conntrack_max to 131072
+I0307 04:29:30.050701	1	conntrack.go:83] Setting conntrack hashsize to 32768
+I0307 04:29:30.050701	1	proxier.go:294] Adding new service “default/db-service:3306" at 10.103.132.104:3306/TCP
+```
+
+
+# DNS in kubernetes
+Kubernetes integra un servicio de DNS predeterminado. Cada vez que se crea un objecto Service, se crea un registro con nombre y IP del servicio.
+Por ello cualquier pod, puede llegar al servicio utilizando su nombre.
+
+Para cada namespace, el servicio de DNS crea un subdominio. Todos los servicio se agrupan en otro subdominio __SVC__.
+
+```bash
+curl http://web-service.apps
+Welcome to NGINX!
+
+curl http://web-service.apps.svc
+Welcome to NGINX!
+
+curl http://web-service.apps.svc.cluster.local
+Welcome to NGINX!
+```
+
+Con los PODs, ocurre lo mismo, sin embargo kubernetes sustituye los puntos de la IP por guiones.
+![dns_pod](09_dns_pod.jpg)
+
+
+# CoreDNS in kubernetes
+# Ingress
