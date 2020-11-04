@@ -500,7 +500,7 @@ Welcome to NGINX!
 ```
 
 Con los PODs, ocurre lo mismo, sin embargo kubernetes sustituye los puntos de la IP por guiones.
-![dns_pod](09_dns_pod.jpg)
+![dns_pod](../img/09_dns_pod.png)
 
 
 # CoreDNS in kubernetes
