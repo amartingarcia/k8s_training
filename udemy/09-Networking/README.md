@@ -504,4 +504,87 @@ Con los PODs, ocurre lo mismo, sin embargo kubernetes sustituye los puntos de la
 
 
 # CoreDNS in kubernetes
+En las versionse previas a v1.12, kubernetes implementaba un servicio llamado kube-dns, desde esa versión hacia delante, el sevicio es llamado CoreDNS.
+
+El servidor CoreDNS se implementan como POD en el namespace kube-system.
+
+Utiliza un fichero de configuración `/etc/coredns/Corefile`, obtenido a través de un ConfigMap, y su contenido es el siguiente:
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+data:
+  Corefile: |
+    .:53 {
+        errors
+        health {
+            lameduck 5s
+        }
+        ready
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+            pods insecure
+            fallthrough in-addr.arpa ip6.arpa
+            ttl 30
+        }
+        prometheus :9153
+        forward . /etc/resolv.conf
+        cache 30
+        loop
+        reload
+        loadbalance
+    }
+```
+
+Cuando se crea un POD, se registra una nueva entrada, sustituyendo los puntos por guiones, para su resolución
+```bash
+10-244-1-5	10.224.1.5
+10-244-2-5	10.224.2.5
+```
+
+CoreDNS también despliega un SERVICE, y permite que los PODs apunten a este SERVICE en su configuración, el encargado de crear esta configuración en los PODs es __kubelet__:
+```bash
+cat /etc/resolv.conf
+
+nameserver	10.96.0.10
+```
+
+Si observamos el archivo de configuración de kubelet, podremos ver la IP del servidor DNS y el dominio:
+```bash
+cat /var/lib/kubelet/config
+
+...
+clusterDNS:
+- 10.96.0.10
+clusterDomain: cluster.local
+```
+
+
+Desde un POD puedes obtener el FQDN de un SERVICE:
+```bash
+host web-service
+web-service.default.svc.cluster.local has address 10.97.206.196
+```
+
+Porque en el fichero /etc/resolv.conf se indica el nombre del cluster:
+```bash
+cat /etc/resolv.conf
+
+nameserver 	10.96.0.10
+search		default.svc.cluster.local	  svc.cluster	 cluster.local
+```
+
+Pero esto solo ocurre con los SERVICE, para un pod, debe indicar el FQDN:
+```bash
+host 10-224-2-5
+Host 10-224-2-5 not found: 3(NXDOMAIN)
+
+# FQDN
+host 10-224-2-5.default.pod.cluster.local
+10-224-2-5.default.pod.cluster.local has address 10.224.2.5
+```
+
+
+
 # Ingress
