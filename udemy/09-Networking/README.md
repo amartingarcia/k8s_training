@@ -586,5 +586,312 @@ host 10-224-2-5.default.pod.cluster.local
 ```
 
 
-
 # Ingress
+Los Ingress ayudan a los usuarios a llegar a su aplicación, usando una única URL accesible externamente, que puede configurar para enrutar a diferente servicios dentro de su cluster. La ruta URL al mismo tiempo, implementa seguridad SSL, un Ingress es como un Loadl Balancer capa 7.
+
+Aún utilizando Ingress necesita exponerlo para que sea accesible desde fuera del cluster.
+
+Kubernetes despliega una solución compatible, como pueden ser Nginx, HAProxy o Traefik, luego configura un conjunto de reglas para configurar el Ingress. Estas soluciones se llaman __Ingress Controller__, y el conjunto de reglas __Ingress Resources__ (Objeto que desplegamos con nuestras aplicaciones).
+
+Por defecto, nuestro cluster no viene con ningún _Ingress Controller_.
+
+## Ingress Controller
+Existen varias soluciones disponibles:
+- GCP HTTP(S) Load Balancer	 (apoyado y mantenido por el proyecto Kubernetes)
+- Nginx (apoyado y mantenido por el proyecto Kubernetes)
+- Contour
+- HAProxy
+- Traefik
+- Istio
+
+Ejemplo de definición de Ingress Controller, para una versión de Nginx creada específicamnte como Ingress Controller para kubernetes.
+- Necesitaremos un ConfigMap con la configuración el Ingres (puede estar vacío), en el que se configura el path para los logs, configuración SSL, etc;
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ingress-nginx-controller
+data:
+  proxy-connect-timeout: "10"
+  proxy-read-timeout: "120"
+  proxy-send-timeout: "120"
+```
+
+- Objeto Deployment para el Ingress Controller:
+```yaml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: nginx-ingress-controller
+  labels:
+    app.kubernetes.io/name: ingress-nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ingress-nginx
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ingress-nginx
+    spec:
+      containers:
+	  - name: nginx-ingress-controller
+	    image: quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.33.0
+    
+        args:
+		- /nginx-ingress-controller
+		- --configmap=$(POD_NAMESPACE)/nginx-configuration
+
+		env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+				fieldPath: metadata.namespace
+		
+		ports:
+        - containerPort: 80
+          hostPort: 80
+        - containerPort: 443
+          hostPort: 443
+```
+
+- Necesitaremos un SERVICE para exponer el Ingress Controller:
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-ingrress
+spec:
+  type: NodePort
+  selector:
+	name: nginx-ingress
+  ports:
+	- name: http
+	  port: 80
+	  targetPort: 80
+	  protocol: TCP
+	- name: https
+	  port: 443
+	  targetPort: 443
+	  protocol: TCP
+```
+
+El Ingress Controller tiene inteligencia adicional para monitorear el cluster en busca de Ingress Resources y configurar el servidor Nginx.
+Para que el Ingress Controller pueda hacer todo esto, necesita una _Service Account_, con un conjunto de permisos.
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: nginx-ingress-serviceaccount
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: nginx-ingress-clusterrole
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - endpoints
+      - nodes
+      - pods
+      - secrets
+    verbs:
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - services
+    verbs:
+      - get
+      - list
+      - update
+      - watch
+  - apiGroups:
+      - extensions
+      - "networking.k8s.io" # k8s 1.14+
+    resources:
+      - ingresses
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+  - apiGroups:
+      - extensions
+      - "networking.k8s.io" # k8s 1.14+
+    resources:
+      - ingresses/status
+    verbs:
+      - update
+  - apiGroups:
+      - "networking.k8s.io" # k8s 1.14+
+    resources:
+      - ingressclasses
+    verbs:
+      - get
+      - list
+	  - watch
+	  
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: nginx-controller-clusterrolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: nginx-ingress-clusterrole
+subjects:
+  - kind: ServiceAccount
+    name: nginx-ingress-serviceaccount
+```
+
+## Ingress Resource
+Un _Ingress Resource_ es un conjunto de reglas y configuraciones aplicadas en el _Ingress Controller_.
+
+Puede configurar reglas simplemente para reenviar todo el tráfico entrante a una sola aplicación o enrutar el tráfico a difrentes apilicaciones basado en URLs.
+
+Se crea mediante un archivo de definición de kubernetes:
+```yaml
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-wear
+spec:
+  backend:
+      serviceName: wear-service
+      servicePort: 80
+```
+
+- Ingress para diferentes paths
+```yaml
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-wear-watch
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /wear
+            backend:
+			  serviceName: wear-service
+			  servicePort: 80
+		  - path: /watch
+            backend:
+			  serviceName: watch-service
+			  servicePort: 80
+```
+
+- Otro tipo de configuración, partiendo de dos dominios:
+```yaml
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-wear-watch
+spec:
+  rules:
+	- host: wear.my-online-store.com
+	  http:
+        paths:
+          - backend:
+			  serviceName: wear-service
+			  servicePort: 80
+	- host: watch.my-online-store.com
+	  http:
+        paths:
+          - backend:
+			  serviceName: watch-service
+			  servicePort: 80
+```
+
+
+## Ingress Annotations and rewrite-target
+Los diferentes Ingress Controller tienen difrentes opciones que pueden ser utilizadas para personalizar su comportamiento. 
+- Rewrite Target
+
+Una web muestra su contenido en: `http://<watch-service>:<port>/`
+
+Y la otra muestra su contenido en `http://<wear-service>:<port>/`
+
+Para lograr lo anterior, necesitamos configurar el Ingress Controller para que podamos reenviar el tráfico al backendo correcto. Las aplicaciones no poseen ese path:
+
+```sh
+http://<ingress-service>:<ingress-port>/watch --> http://<watch-service>:<port>/
+
+http://<ingress-service>:<ingress-port>/wear --> http://<wear-service>:<port>/
+
+Without the rewrite-target option, this is what would happen:
+```
+
+Sin la opción rewrite-target, lo que pasaría sería lo siguiente:
+```sh
+http://<ingress-service>:<ingress-port>/watch --> http://<watch-service>:<port>/watch
+
+http://<ingress-service>:<ingress-port>/wear --> http://<wear-service>:<port>/wear
+```
+
+Ejemplo de rewrite-target:
+
+```yaml
+    apiVersion: extensions/v1beta1
+    kind: Ingress
+    metadata:
+      name: test-ingress
+      namespace: critical-space
+      annotations:
+        nginx.ingress.kubernetes.io/rewrite-target: /
+    spec:
+      rules:
+      - http:
+          paths:
+          - path: /pay
+            backend:
+              serviceName: pay-service
+			  servicePort: 8282
+```
+
+In another example given here, this could also be:
+`replace("/something(/|$)(.*)", "/$2")`
+```yaml
+    apiVersion: extensions/v1beta1
+    kind: Ingress
+    metadata:
+      annotations:
+        nginx.ingress.kubernetes.io/rewrite-target: /$2
+      name: rewrite
+      namespace: default
+    spec:
+      rules:
+      - host: rewrite.bar.com
+        http:
+          paths:
+          - backend:
+              serviceName: http-svc
+              servicePort: 80
+            path: /something(/|$)(.*)
+```
